@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Text, View, Image, TouchableOpacity } from "react-native";
 import axios from "axios";
-import { RootStackParamList } from "./App";
+import { RootStackParamList } from "../components/Nav";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ZodError, z } from "zod";
+import LottiesView from "../components/LottiesView";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Movies">;
 
@@ -55,9 +56,7 @@ export default function MoviesScreen({ navigation }: Props) {
   if (error) return <Text>Error: {error.message}</Text>;
 
   return isLoading ? (
-    <View className="flex items-center justify-center w-full h-screen">
-      <Text>Loading</Text>
-    </View>
+    <LottiesView />
   ) : (
     <View className="flex items-center justify-center w-screen h-screen  bg-black">
       {data !== null &&
@@ -68,7 +67,7 @@ export default function MoviesScreen({ navigation }: Props) {
                 onPress={() => navigation.navigate("Movie", { id: movie.id })}
               >
                 <Text className="bg-purple-700 p-5 rounded-xl text-white">
-                  {movie.title}
+                  {movie.title.toUpperCase()}
                 </Text>
               </TouchableOpacity>
             </View>

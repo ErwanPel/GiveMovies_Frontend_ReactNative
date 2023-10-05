@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Text, View, Image } from "react-native";
 import axios from "axios";
-import { RootStackParamList } from "./App";
+import { RootStackParamList } from "../components/Nav";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ZodError, z } from "zod";
+import LottiesView from "../components/LottiesView";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Movie">;
 
@@ -48,16 +49,14 @@ export default function MovieScreen(props: Props) {
   }, []);
 
   return isLoading ? (
-    <View className="flex items-center justify-center w-full h-screen">
-      <Text>Loading</Text>
-    </View>
+    <LottiesView />
   ) : (
     <View className="flex items-center justify-center w-full h-screen">
       {data !== null && (
         <>
           <Image
             source={{ uri: data.poster_path }}
-            className="w-full h-full "
+            className="w-full h-full opacity-70"
           />
           <View className="absolute bg-black w-full flex flex-col items-center opacity-75 p-4">
             <View className="flex flex-row gap-1">
