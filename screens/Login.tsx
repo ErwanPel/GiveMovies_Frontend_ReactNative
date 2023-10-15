@@ -25,12 +25,11 @@ export default function Login(props: Props) {
     const pass = { password: "cameleon78" };
     try {
       const validPass = passSchema.parse(pass);
-      console.log("donnée valide !", validPass);
 
       try {
         const { data } = await axios.post("http://10.0.2.2:3000/login", pass);
         const responseZod = tokenSchema.parse(data);
-        console.log("token valide", responseZod);
+
         return responseZod.token;
       } catch (error) {
         if (error instanceof ZodError) {

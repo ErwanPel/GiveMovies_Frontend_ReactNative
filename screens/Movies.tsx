@@ -1,31 +1,19 @@
 import { useEffect, useState } from "react";
-import { Text, View, Image, TouchableOpacity } from "react-native";
+import { Text, View, Image, TouchableOpacity, ScrollView } from "react-native";
 import axios from "axios";
 import { RootStackParamList } from "../components/Nav";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ZodError, z } from "zod";
 import LottiesView from "../components/LottiesView";
+import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Movies">;
-
-const MoviesSchema = z.array(
-  z.object({
-    backdrop_path: z.string(),
-    poster_path: z.string(),
-    overview: z.string(),
-    release_date: z.string(),
-    title: z.string(),
-    vote_average: z.number(),
-    id: z.string(),
-  })
-);
 
 type Movies = z.infer<typeof MoviesSchema>;
 
 export default function MoviesScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-
   const [data, setData] = useState<Movies | null>(null);
 
   console.log(data);
@@ -33,7 +21,7 @@ export default function MoviesScreen({ navigation }: Props) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get("http://10.0.2.2:3000/movies");
+        const { data } = await axios.get(`http://10.0.2.2:3000/movies?page=1`);
         const responseData = MoviesSchema.parse(data);
 
         console.log(responseData);
@@ -44,10 +32,10 @@ export default function MoviesScreen({ navigation }: Props) {
       } catch (error) {
         if (error instanceof ZodError) {
           setError(new Error("erreur Zod"));
+          console.log(error);
         } else {
-          setError(new Error("error occured"));
+          console.log(error);
         }
-        console.log(error);
       }
     };
     fetchData();
@@ -55,24 +43,48 @@ export default function MoviesScreen({ navigation }: Props) {
 
   if (error) return <Text>Error: {error.message}</Text>;
 
+  console.log(data);
+
   return isLoading ? (
     <LottiesView />
   ) : (
-    <View className="flex items-center justify-center w-screen h-screen  bg-black">
-      {data !== null &&
-        data.map((movie) => {
-          return (
-            <View className="mb-4" key={movie.id}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Movie", { id: movie.id })}
+    <>
+      <View>
+        <Text>473 films</Text>
+      </View>
+      <ScrollView
+        contentContainerStyle={{
+          display: "flex",
+          flexDirection: "row",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 40,
+        }}
+        className="bg-black"
+      >
+        {data !== null &&
+          data.results.map((movie) => {
+            return (
+              <View
+                className="mb-5 h-[270] w-[154] flex items-center justify-center "
+                key={movie.id}
               >
-                <Text className="bg-purple-700 p-5 rounded-xl text-white">
-                  {movie.title.toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          );
-        })}
-    </View>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Movie", { id: movie.id })}
+                >
+                  <Image
+                    source={{ uri: movie.poster_path.w154 }}
+                    className="w-[154] h-[220]"
+                  />
+                  <Text className="   text-white text-center h-[40] mt-2">
+                    {movie.title.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })}
+      </ScrollView>
+    </>
   );
 }

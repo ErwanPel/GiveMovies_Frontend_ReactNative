@@ -12,7 +12,7 @@ export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Movies: undefined;
-  Movie: { id: string };
+  Movie: { id: number };
 };
 
 export default function Nav() {
