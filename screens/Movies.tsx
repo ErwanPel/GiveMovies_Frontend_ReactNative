@@ -6,6 +6,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ZodError, z } from "zod";
 import LottiesView from "../components/LottiesView";
 import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
+import { Picker } from "@react-native-picker/picker";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Movies">;
 
@@ -15,16 +16,18 @@ export default function MoviesScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<Movies | null>(null);
+  const [selectedPage, setSelectedPage] = useState<number>(1);
 
-  console.log(data);
+  let numberPage = Array.from(Array(473).keys());
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("dans le fetch");
       try {
-        const { data } = await axios.get(`http://10.0.2.2:3000/movies?page=1`);
+        const { data } = await axios.get(
+          `http://10.0.2.2:3000/movies?page=${selectedPage}`
+        );
         const responseData = MoviesSchema.parse(data);
-
-        console.log(responseData);
 
         setData(responseData);
 
@@ -39,18 +42,31 @@ export default function MoviesScreen({ navigation }: Props) {
       }
     };
     fetchData();
-  }, []);
+  }, [selectedPage]);
 
   if (error) return <Text>Error: {error.message}</Text>;
-
-  console.log(data);
 
   return isLoading ? (
     <LottiesView />
   ) : (
     <>
       <View>
-        <Text>473 films</Text>
+        <Picker
+          selectedValue={selectedPage}
+          onValueChange={(page) => {
+            setSelectedPage(page);
+          }}
+        >
+          {numberPage.map((num, index) => {
+            return (
+              <Picker.Item
+                key={index}
+                label={`page ${num + 1}`}
+                value={num + 1}
+              />
+            );
+          })}
+        </Picker>
       </View>
       <ScrollView
         contentContainerStyle={{
@@ -61,7 +77,7 @@ export default function MoviesScreen({ navigation }: Props) {
           alignItems: "center",
           gap: 40,
         }}
-        className="bg-black"
+        className="bg-black pt-3"
       >
         {data !== null &&
           data.results.map((movie) => {
