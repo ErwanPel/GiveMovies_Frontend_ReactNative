@@ -8,7 +8,7 @@ import LottiesView from "../components/LottiesView";
 import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
 import { Picker } from "@react-native-picker/picker";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Movies">;
+type Props = NativeStackScreenProps<RootStackParamList>;
 
 type Movies = z.infer<typeof MoviesSchema>;
 

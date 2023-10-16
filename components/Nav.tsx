@@ -1,26 +1,36 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useAuthContext } from "../assets/context/AuthContext";
 import { NavigationContainer } from "@react-navigation/native";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Login from "../screens/Login";
-import Home from "../screens/Home";
+import Profile from "../screens/Profile";
 import Movies from "../screens/Movies";
 import Movie from "../screens/Movie";
+import Signin from "../screens/Signin";
 
 export type RootStackParamList = {
+  Signin: undefined;
   Login: undefined;
-  Home: undefined;
   Movies: undefined;
   Movie: { id: number };
+  Tab: undefined;
+  Profile: undefined;
+};
+
+export type RootTabParamList = {
+  TabMovies: undefined;
+  TabProfile: undefined;
 };
 
 export default function Nav() {
   const [isLoading, setIsLoading] = useState(true);
 
-  const { setUserToken, userToken, setToken } = useAuthContext();
+  const { setUserToken, userToken } = useAuthContext();
 
   const Stack = createNativeStackNavigator<RootStackParamList>();
+  const Tab = createBottomTabNavigator<RootTabParamList>();
 
   useEffect(() => {
     const bootstrapAsync = async () => {
@@ -47,13 +57,32 @@ export default function Nav() {
         }}
       >
         {!userToken ? (
-          <Stack.Screen name="Login" component={Login} />
-        ) : (
           <>
-            <Stack.Screen name="Home" component={Home} />
-            <Stack.Screen name="Movies" component={Movies} />
-            <Stack.Screen name="Movie" component={Movie} />
+            <Stack.Screen name="Signin" component={Signin} />
+            <Stack.Screen name="Login" component={Login} />
           </>
+        ) : (
+          <Stack.Screen name="Tab">
+            {() => (
+              <Tab.Navigator>
+                <Tab.Screen name="TabMovies">
+                  {() => (
+                    <Stack.Navigator>
+                      <Stack.Screen name="Movies" component={Movies} />
+                      <Stack.Screen name="Movie" component={Movie} />
+                    </Stack.Navigator>
+                  )}
+                </Tab.Screen>
+                <Tab.Screen name="TabProfile">
+                  {() => (
+                    <Stack.Navigator>
+                      <Stack.Screen name="Profile" component={Profile} />
+                    </Stack.Navigator>
+                  )}
+                </Tab.Screen>
+              </Tab.Navigator>
+            )}
+          </Stack.Screen>
         )}
       </Stack.Navigator>
     </NavigationContainer>

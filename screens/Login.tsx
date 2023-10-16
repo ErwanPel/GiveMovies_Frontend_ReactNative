@@ -1,71 +1,106 @@
-import { Text, View, TouchableOpacity } from "react-native";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
+  GestureResponderEvent,
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useAuthContext } from "../assets/context/AuthContext";
 import { RootStackParamList } from "../components/Nav";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { z, ZodError } from "zod";
 import axios from "axios";
 import { useState } from "react";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Login">;
+type Props = NativeStackScreenProps<RootStackParamList>;
 
-const passSchema = z.object({
-  password: z.string().min(10, {
-    message: "le mot de passe est trop petit",
-  }),
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
 });
 
-const tokenSchema = z.object({
-  token: z.string(),
-});
+type loginData = z.infer<typeof loginSchema>;
 
-export default function Login(props: Props) {
+export default function Login({ navigation }: Props) {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  const connect = async (): Promise<null | string> => {
-    const pass = { password: "cameleon78" };
+  const { setToken } = useAuthContext();
+
+  const handleSubmit = async (event: GestureResponderEvent) => {
+    event.preventDefault();
+    const sendLoginData: loginData = { email, password };
     try {
-      const validPass = passSchema.parse(pass);
+      const loginParsed = loginSchema.parse(sendLoginData);
+      console.log("login ok", loginParsed);
 
-      try {
-        const { data } = await axios.post("http://10.0.2.2:3000/login", pass);
-        const responseZod = tokenSchema.parse(data);
-
-        return responseZod.token;
-      } catch (error) {
-        if (error instanceof ZodError) {
-          console.log("ZodError");
-        } else {
-          console.log("error");
+      const response = await axios.post(
+        "http://10.0.2.2:3000/login",
+        loginParsed,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-        return null;
-      }
+      );
+      console.log(response.data);
+      setToken(response.data.token);
     } catch (error) {
       if (error instanceof ZodError) {
-        console.log(error.issues[0].message);
-        setError(error.issues[0].message);
+        console.log(error);
       } else {
         console.log(error);
       }
-      return null;
     }
   };
 
-  const { setToken } = useAuthContext();
   return (
-    <View className="flex items-center justify-center w-full h-screen bg-black">
-      <View>
-        <TouchableOpacity
-          onPress={async () => {
-            const response = await connect();
-            if (typeof response === "string") {
-              await setToken(response);
-            }
-          }}
-        >
-          <Text className="bg-purple-700 p-5 rounded-xl text-white">LOGIN</Text>
+    <KeyboardAwareScrollView>
+      <View className="flex items-center justify-center w-full h-screen bg-black">
+        <View className=" w-[80%] mb-8">
+          <Text className="text-slate-100 ml-3 text-base p-2">Email</Text>
+          <TextInput
+            className="bg-white px-6 py-1 rounded-3xl border-green-600 border-4"
+            onChangeText={(text) => {
+              setError("");
+              setEmail((prev) => text);
+            }}
+            placeholder="doe@gmail.com"
+            placeholderTextColor={"grey"}
+          />
+        </View>
+        <View className=" w-[80%] mb-8">
+          <Text className="text-slate-100 ml-3 text-base p-2 ">Password</Text>
+          <TextInput
+            className="bg-white px-6 py-1 rounded-3xl border-green-600 border-4"
+            onChangeText={(text) => {
+              setError("");
+              setPassword((prev) => text);
+            }}
+            placeholder="test"
+            placeholderTextColor={"grey"}
+            secureTextEntry
+          />
+        </View>
+
+        <TouchableOpacity onPress={(event) => handleSubmit(event)}>
+          <View className="mt-4 mb-8">
+            <Text className="text-white rounded-xl text-center w-[150] p-4 bg-purple-800">
+              SIGN IN
+            </Text>
+          </View>
+        </TouchableOpacity>
+        {error && <Text className="text-red-700 mt-4">{error}</Text>}
+        <TouchableOpacity onPress={() => navigation.navigate("Signin")}>
+          <View>
+            <Text className="text-white rounded-xl text-center underline  decoration-white p-4 ">
+              Don't have an account ?
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
-      {error && <Text className="text-red-700 mt-4">{error}</Text>}
-    </View>
+    </KeyboardAwareScrollView>
   );
 }
