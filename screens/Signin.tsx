@@ -38,9 +38,8 @@ export default function Signin({ navigation }: Props) {
 
   const handleSubmit = async (event: GestureResponderEvent) => {
     event.preventDefault();
-    console.log("here");
+
     if (password === confirmPassword) {
-      console.log("ok");
       const dataToVerify: SignData = { username, email, password };
       try {
         const parseData = signinSchema.parse(dataToVerify);
@@ -59,7 +58,7 @@ export default function Signin({ navigation }: Props) {
             },
           }
         );
-        setToken(response.data.token);
+        setToken(response.data.token, response.data._id);
       } catch (error) {
         if (error instanceof ZodError) {
           console.log(error.issues);

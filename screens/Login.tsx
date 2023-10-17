@@ -34,7 +34,6 @@ export default function Login({ navigation }: Props) {
     const sendLoginData: loginData = { email, password };
     try {
       const loginParsed = loginSchema.parse(sendLoginData);
-      console.log("login ok", loginParsed);
 
       const response = await axios.post(
         "http://10.0.2.2:3000/login",
@@ -45,8 +44,8 @@ export default function Login({ navigation }: Props) {
           },
         }
       );
-      console.log(response.data);
-      setToken(response.data.token);
+
+      setToken(response.data.token, response.data._id);
     } catch (error) {
       if (error instanceof ZodError) {
         console.log(error);

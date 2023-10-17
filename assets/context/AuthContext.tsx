@@ -9,20 +9,26 @@ type AuthContextProps = {
 type AuthContext = {
   userToken: null | string;
   setUserToken: (token: string | null) => void;
-  setToken: (token: null | string) => Promise<void>;
+  userID: null | string;
+  setUserID: (token: string | null) => void;
+  setToken: (token: null | string, id: null | string) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContext | null>(null);
 
 export default function AuthProvider({ children }: AuthContextProps) {
   const [userToken, setUserToken] = useState<null | string>(null);
+  const [userID, setUserID] = useState<null | string>(null);
 
   // Create function sentToken
-  const setToken = async (token: null | string) => {
-    if (token) {
+  const setToken = async (token: null | string, id: null | string) => {
+    if (token && id) {
+      console.log(token, id);
       await AsyncStorage.setItem("userToken", token);
+      await AsyncStorage.setItem("userID", id);
     } else {
       AsyncStorage.removeItem("userToken");
+      AsyncStorage.removeItem("userID");
     }
     setUserToken(token);
   };
@@ -30,6 +36,8 @@ export default function AuthProvider({ children }: AuthContextProps) {
   const valueAuth = {
     userToken,
     setUserToken,
+    userID,
+    setUserID,
     setToken,
   };
   return (

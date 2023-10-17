@@ -22,7 +22,6 @@ export default function MoviesScreen({ navigation }: Props) {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("dans le fetch");
       try {
         const { data } = await axios.get(
           `http://10.0.2.2:3000/movies?page=${selectedPage}`

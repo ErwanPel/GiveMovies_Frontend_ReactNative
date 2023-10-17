@@ -13,7 +13,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ZodError, z } from "zod";
 import LottiesView from "../components/LottiesView";
 import { SoloMovieSchema } from "../assets/zodSchema/moviesSchema";
-import ReviewForm from "../components/ReviewForm";
+import Review from "../components/Review";
 import { Entypo } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Movie">;
@@ -24,7 +24,6 @@ export default function MovieScreen(props: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<Movies | null>(null);
-  console.log(props.route.params.id);
 
   const reviewRef = useRef<TextInput | null>(null);
 
@@ -35,9 +34,9 @@ export default function MovieScreen(props: Props) {
           `http://10.0.2.2:3000/movies/${props.route.params.id}`
         );
         const responseData = SoloMovieSchema.parse(data);
-        console.log(responseData);
-        setData(responseData);
 
+        setData(responseData);
+        console.log(responseData.id);
         setIsLoading(false);
       } catch (error) {
         if (error instanceof ZodError) {
@@ -67,12 +66,14 @@ export default function MovieScreen(props: Props) {
                 <Text className="text-white text-lg text-center">
                   {data.title}
                 </Text>
-                <Text className="text-white bg-purple-500 w-[50] py-1 rounded-sm text-lg text-center">
-                  {data.vote_average.toFixed(1)}
-                </Text>
-                <Text className="text-white text-lg text-center ">
-                  {data.release_date}
-                </Text>
+                <View className="flex-row justify-around items-center gap-x-5">
+                  <Text className="text-white bg-purple-500 w-[50] py-1 rounded-sm text-lg text-center">
+                    {data.vote_average.toFixed(1)}
+                  </Text>
+                  <Text className="text-white text-lg text-center ">
+                    {data.release_date}
+                  </Text>
+                </View>
               </View>
               <Text className="text-white text-base  mt-4 ">
                 {data.overview}
@@ -91,7 +92,11 @@ export default function MovieScreen(props: Props) {
           </>
         )}
       </View>
-      <ReviewForm reviewRef={reviewRef} />
+      <Review
+        reviewRef={reviewRef}
+        id={data && data.id}
+        title={data && data.title}
+      />
     </ScrollView>
   );
 }

@@ -9,6 +9,8 @@ import Profile from "../screens/Profile";
 import Movies from "../screens/Movies";
 import Movie from "../screens/Movie";
 import Signin from "../screens/Signin";
+import { MaterialIcons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 
 export type RootStackParamList = {
   Signin: undefined;
@@ -27,7 +29,7 @@ export type RootTabParamList = {
 export default function Nav() {
   const [isLoading, setIsLoading] = useState(true);
 
-  const { setUserToken, userToken } = useAuthContext();
+  const { setUserToken, userToken, setUserID } = useAuthContext();
 
   const Stack = createNativeStackNavigator<RootStackParamList>();
   const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -35,7 +37,9 @@ export default function Nav() {
   useEffect(() => {
     const bootstrapAsync = async () => {
       const userToken = await AsyncStorage.getItem("userToken");
+      const userId = await AsyncStorage.getItem("userID");
       setUserToken(userToken);
+      setUserID(userId);
       setIsLoading(false);
     };
     bootstrapAsync();
@@ -62,20 +66,62 @@ export default function Nav() {
             <Stack.Screen name="Login" component={Login} />
           </>
         ) : (
-          <Stack.Screen name="Tab">
+          <Stack.Screen name="Tab" options={{ headerShown: false }}>
             {() => (
-              <Tab.Navigator>
-                <Tab.Screen name="TabMovies">
+              <Tab.Navigator
+                screenOptions={{
+                  headerShown: false,
+                  tabBarActiveTintColor: "#B17BE0",
+                  tabBarInactiveTintColor: "gray",
+                }}
+              >
+                <Tab.Screen
+                  name="TabMovies"
+                  options={{
+                    tabBarLabel: "Movies",
+                    tabBarIcon: ({ color, size }) => (
+                      <MaterialIcons
+                        name="local-movies"
+                        size={size}
+                        color={color}
+                      />
+                    ),
+                  }}
+                >
                   {() => (
-                    <Stack.Navigator>
+                    <Stack.Navigator
+                      screenOptions={{
+                        headerStyle: {
+                          backgroundColor: "black",
+                        },
+                        headerTintColor: "#fff",
+                        headerTitleAlign: "center",
+                      }}
+                    >
                       <Stack.Screen name="Movies" component={Movies} />
                       <Stack.Screen name="Movie" component={Movie} />
                     </Stack.Navigator>
                   )}
                 </Tab.Screen>
-                <Tab.Screen name="TabProfile">
+                <Tab.Screen
+                  name="TabProfile"
+                  options={{
+                    tabBarLabel: "Profile",
+                    tabBarIcon: ({ color, size }) => (
+                      <AntDesign name="profile" size={size} color={color} />
+                    ),
+                  }}
+                >
                   {() => (
-                    <Stack.Navigator>
+                    <Stack.Navigator
+                      screenOptions={{
+                        headerStyle: {
+                          backgroundColor: "black",
+                        },
+                        headerTintColor: "#fff",
+                        headerTitleAlign: "center",
+                      }}
+                    >
                       <Stack.Screen name="Profile" component={Profile} />
                     </Stack.Navigator>
                   )}
