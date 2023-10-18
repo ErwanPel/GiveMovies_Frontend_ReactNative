@@ -3,7 +3,7 @@ import { TextInput, View, ScrollView, Text } from "react-native";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { z, ZodError } from "zod";
-import { getMovieAndReviewSchema } from "../assets/zodSchema/getReviewsSchema";
+import { getReviewSchema } from "../assets/zodSchema/reviewSchemaFile";
 import { useAuthContext } from "../assets/context/AuthContext";
 import ImageProfile from "./ImageProfile";
 import { Entypo } from "@expo/vector-icons";
@@ -14,7 +14,7 @@ type ReviewProps = {
   title: string | null;
 };
 
-export type Review = z.infer<typeof getMovieAndReviewSchema>;
+export type Review = z.infer<typeof getReviewSchema>;
 
 export default function Review({ reviewRef, id, title }: ReviewProps) {
   const [data, setData] = useState<Review | null>(null);
@@ -36,10 +36,15 @@ export default function Review({ reviewRef, id, title }: ReviewProps) {
             },
           }
         );
-        const parsedData = getMovieAndReviewSchema.parse(response.data);
-
-        setData(parsedData);
-
+        console.log("data", response.data);
+        if (response.data.length === 0) {
+          console.log("dans le data");
+          setData(response.data);
+        } else {
+          console.log("dans le parse");
+          const parsedData = getReviewSchema.parse(response.data);
+          setData(parsedData);
+        }
         setIsLoading(false);
       } catch (error: any) {
         if (error instanceof ZodError) {
@@ -65,7 +70,6 @@ export default function Review({ reviewRef, id, title }: ReviewProps) {
         id={id}
         title={title}
         setReload={setReload}
-        data={data}
         reload={reload}
       />
       <ScrollView horizontal>
