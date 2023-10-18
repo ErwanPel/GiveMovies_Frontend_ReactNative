@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
-import { Text, View, Image, TouchableOpacity, ScrollView } from "react-native";
+import { Text, View, TouchableOpacity, FlatList } from "react-native";
 import axios from "axios";
 import { RootStackParamList } from "../components/Nav";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ZodError, z } from "zod";
 import LottiesView from "../components/LottiesView";
 import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
+import { TMovie } from "./Movie";
 import { Picker } from "@react-native-picker/picker";
+import Card from "../components/card";
+import { FontAwesome } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
-type Movies = z.infer<typeof MoviesSchema>;
+export type Movies = z.infer<typeof MoviesSchema>;
 
 export default function MoviesScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(true);
@@ -67,39 +70,57 @@ export default function MoviesScreen({ navigation }: Props) {
           })}
         </Picker>
       </View>
-      <ScrollView
+      <View className="flex-row justify-between  p-6 bg-black">
+        <View
+          className={
+            selectedPage > 1
+              ? "flex-row  justify-around w-[150] "
+              : "opacity-0 flex-row justify-around "
+          }
+        >
+          <TouchableOpacity onPress={() => setSelectedPage(1)}>
+            <FontAwesome name="angle-double-left" size={32} color="purple" />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setSelectedPage(selectedPage - 1)}>
+            <FontAwesome name="angle-left" size={32} color="purple" />
+          </TouchableOpacity>
+        </View>
+
+        <View
+          className={
+            selectedPage < 473
+              ? "flex-row justify-around  w-[150] "
+              : "opacity-0 flex-row justify-around "
+          }
+        >
+          <TouchableOpacity onPress={() => setSelectedPage(selectedPage + 1)}>
+            <FontAwesome name="angle-right" size={32} color="purple" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setSelectedPage(473)}>
+            <FontAwesome name="angle-double-right" size={32} color="purple" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <FlatList
         contentContainerStyle={{
-          display: "flex",
-          flexDirection: "row",
-          flexWrap: "wrap",
-          justifyContent: "center",
           alignItems: "center",
           gap: 40,
         }}
+        key="1"
+        numColumns={2}
+        columnWrapperStyle={{ gap: 40 }}
         className="bg-black pt-3"
-      >
-        {data !== null &&
-          data.results.map((movie) => {
-            return (
-              <View
-                className="mb-5 h-[270] w-[154] flex items-center justify-center "
-                key={movie.id}
-              >
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Movie", { id: movie.id })}
-                >
-                  <Image
-                    source={{ uri: movie.poster_path.w154 }}
-                    className="w-[154] h-[220]"
-                  />
-                  <Text className="   text-white text-center h-[40] mt-2">
-                    {movie.title.toUpperCase()}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            );
-          })}
-      </ScrollView>
+        data={data && data.results}
+        keyExtractor={(item: TMovie) => String(item.id)}
+        renderItem={({ item }) => <Card movie={item} />}
+      />
     </>
   );
+}
+{
+  /* {data !== null &&
+          data.results.map((movie) => {
+            return <Card movie={movie} />;
+          })} */
 }

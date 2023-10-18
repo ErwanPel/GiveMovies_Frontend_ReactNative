@@ -5,12 +5,14 @@ import { NavigationContainer } from "@react-navigation/native";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Login from "../screens/Login";
+import RandomMovies from "../screens/randomMovies";
 import Profile from "../screens/Profile";
 import Movies from "../screens/Movies";
 import Movie from "../screens/Movie";
 import Signin from "../screens/Signin";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 export type RootStackParamList = {
   Signin: undefined;
@@ -19,11 +21,13 @@ export type RootStackParamList = {
   Movie: { id: number };
   Tab: undefined;
   Profile: undefined;
+  RandomMovies: undefined;
 };
 
 export type RootTabParamList = {
   TabMovies: undefined;
   TabProfile: undefined;
+  TabRandomMovies: undefined;
 };
 
 export default function Nav() {
@@ -99,6 +103,33 @@ export default function Nav() {
                       }}
                     >
                       <Stack.Screen name="Movies" component={Movies} />
+                      <Stack.Screen name="Movie" component={Movie} />
+                    </Stack.Navigator>
+                  )}
+                </Tab.Screen>
+                <Tab.Screen
+                  name="TabRandomMovies"
+                  options={{
+                    tabBarLabel: "Random Movie",
+                    tabBarIcon: ({ color, size }) => (
+                      <FontAwesome5 name="dice" size={size} color={color} />
+                    ),
+                  }}
+                >
+                  {() => (
+                    <Stack.Navigator
+                      screenOptions={{
+                        headerStyle: {
+                          backgroundColor: "black",
+                        },
+                        headerTintColor: "#fff",
+                        headerTitleAlign: "center",
+                      }}
+                    >
+                      <Stack.Screen
+                        name="RandomMovies"
+                        component={RandomMovies}
+                      />
                       <Stack.Screen name="Movie" component={Movie} />
                     </Stack.Navigator>
                   )}

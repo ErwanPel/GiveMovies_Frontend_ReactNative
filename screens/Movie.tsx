@@ -15,15 +15,17 @@ import LottiesView from "../components/LottiesView";
 import { SoloMovieSchema } from "../assets/zodSchema/moviesSchema";
 import Review from "../components/Review";
 import { Entypo } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Movie">;
 
-type Movies = z.infer<typeof SoloMovieSchema>;
+export type TMovie = z.infer<typeof SoloMovieSchema>;
 
 export default function MovieScreen(props: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<Movies | null>(null);
+  const [data, setData] = useState<TMovie | null>(null);
+  const [showOverView, setShowOverview] = useState<boolean>(false);
 
   const reviewRef = useRef<TextInput | null>(null);
 
@@ -61,6 +63,7 @@ export default function MovieScreen(props: Props) {
               source={{ uri: data.poster_path.original }}
               className="w-full h-full opacity-60"
             />
+
             <View className="absolute bg-black w-full flex items-center opacity-90 p-4">
               <View className="flex items-center gap-3">
                 <Text className="text-white text-lg text-center">
@@ -75,9 +78,28 @@ export default function MovieScreen(props: Props) {
                   </Text>
                 </View>
               </View>
-              <Text className="text-white text-base  mt-4 ">
+              <Text
+                numberOfLines={showOverView ? undefined : 8}
+                className="text-white text-base text-justify mt-4 "
+              >
                 {data.overview}
               </Text>
+              <TouchableOpacity
+                className="self-start"
+                onPress={() => setShowOverview(!showOverView)}
+              >
+                <View className="mt-2 flex-row items-center ">
+                  <Text className="text-white underline decoration-white ">
+                    {showOverView ? "Show less" : "Show More"}
+                  </Text>
+                  <MaterialIcons
+                    name={showOverView ? "arrow-drop-up" : "arrow-drop-down"}
+                    size={24}
+                    color="white"
+                  />
+                </View>
+              </TouchableOpacity>
+
               <TouchableOpacity onPress={() => reviewRef.current?.focus()}>
                 <View className="items-center gap-2 mt-2">
                   <Entypo
