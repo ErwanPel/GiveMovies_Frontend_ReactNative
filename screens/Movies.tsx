@@ -8,7 +8,7 @@ import LottiesView from "../components/LottiesView";
 import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
 import { TMovie } from "./Movie";
 import { Picker } from "@react-native-picker/picker";
-import Card from "../components/card";
+import Card from "../components/Card";
 import { FontAwesome } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
@@ -27,7 +27,7 @@ export default function MoviesScreen({ navigation }: Props) {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `http://10.0.2.2:3000/movies?page=${selectedPage}`
+          `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies?page=${selectedPage}`
         );
         const responseData = MoviesSchema.parse(data);
 

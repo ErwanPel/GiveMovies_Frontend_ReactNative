@@ -11,12 +11,13 @@ export default function ProfileScreen(props: Props) {
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<string | Error | null>(null);
+  const [picture, setPicture] = useState<string | null>(null);
 
   const { setToken } = useAuthContext();
 
   return (
     <View className="flex items-center justify-start w-full h-screen bg-black pt-6">
-      <ImageProfile sizeBorder="w-[80] h-[80]" sizeImage={40} />
+      <ImageProfile file={picture} sizeBorder="w-[80] h-[80]" sizeImage={40} />
       <View className=" w-[80%] mb-8 mt-8">
         <Text className="text-slate-100 ml-3 text-base p-2">Pseudo</Text>
         <TextInput

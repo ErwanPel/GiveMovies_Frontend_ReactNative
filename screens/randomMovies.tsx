@@ -12,7 +12,7 @@ import { TMovie } from "./Movie";
 import { ZodError } from "zod";
 import axios from "axios";
 import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
-import Card from "../components/card";
+import Card from "../components/Card";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -26,7 +26,7 @@ export default function RandomMoviesScreen(props: Props) {
     try {
       const number = Math.ceil(Math.random() * 472);
       const { data } = await axios.get(
-        `http://10.0.2.2:3000/movies?page=${number}`
+        `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies?page=${number}`
       );
       const responseData = MoviesSchema.parse(data);
       console.log(JSON.stringify(responseData, null, 2));

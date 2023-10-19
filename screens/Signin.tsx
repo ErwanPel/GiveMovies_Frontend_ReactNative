@@ -6,28 +6,22 @@ import {
   Text,
   TouchableOpacity,
   GestureResponderEvent,
+  Platform,
 } from "react-native";
 import { useState } from "react";
 import { RootStackParamList } from "../components/Nav";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useAuthContext } from "../assets/context/AuthContext";
+import ImageAndSelectPicture from "../components/ImageAndSelectPicture";
+import { signinSchema } from "../assets/zodSchema/signInSchema";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
-
-const signinSchema = z.object({
-  username: z.string().min(3, {
-    message: "the username needs at least 3 characters",
-  }),
-  email: z.string().email(),
-  password: z.string().min(8, {
-    message: "the password needs at least 8 characters",
-  }),
-});
 
 type SignData = z.infer<typeof signinSchema>;
 
 export default function Signin({ navigation }: Props) {
+  const [picture, setPicture] = useState<string | null>(null);
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -40,26 +34,53 @@ export default function Signin({ navigation }: Props) {
     event.preventDefault();
 
     if (password === confirmPassword) {
-      const dataToVerify: SignData = { username, email, password };
+      const dataToVerify: SignData = { username, email, password, picture };
       try {
         const parseData = signinSchema.parse(dataToVerify);
 
         const formData = new FormData();
+
+        if (parseData.picture) {
+          const tab = picture?.split(".");
+          const pictureUri = picture;
+          const namePicture = `profil.${tab && tab.at(-1)}`;
+          const mimetype = `image/${tab && tab.at(-1)}`;
+          const pictureData: any = {
+            uri: pictureUri,
+            name: namePicture,
+            type: mimetype,
+          };
+          console.log("picture data", JSON.stringify(pictureData, null, 2));
+          formData.append("picture", pictureData);
+        }
+
         formData.append("username", dataToVerify.username);
         formData.append("email", dataToVerify.email);
         formData.append("password", dataToVerify.password);
-
-        const response = await axios.post(
-          "http://10.0.2.2:3000/signin",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        setToken(response.data.token, response.data._id);
-      } catch (error) {
+        if (Platform.OS === "ios") {
+          const response = await axios.post(
+            "https://site--givemovies-backend--fwddjdqr85yq.code.run/signin",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          setToken(response.data.token, response.data._id);
+        } else {
+          const response = await axios.post(
+            "https://site--givemovies-backend--fwddjdqr85yq.code.run/signin",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          setToken(response.data.token, response.data._id);
+        }
+      } catch (error: any) {
         if (error instanceof ZodError) {
           console.log(error.issues);
         } else {
@@ -74,6 +95,8 @@ export default function Signin({ navigation }: Props) {
   return (
     <KeyboardAwareScrollView>
       <View className="flex items-center w-full h-screen bg-black pt-6">
+        <ImageAndSelectPicture picture={picture} setPicture={setPicture} />
+
         <View className=" w-[80%] mb-8">
           <Text className="text-slate-100 ml-3 text-base p-2">Pseudo</Text>
           <TextInput

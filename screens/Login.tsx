@@ -36,7 +36,7 @@ export default function Login({ navigation }: Props) {
       const loginParsed = loginSchema.parse(sendLoginData);
 
       const response = await axios.post(
-        "http://10.0.2.2:3000/login",
+        "https://site--givemovies-backend--fwddjdqr85yq.code.run/login",
         loginParsed,
         {
           headers: {

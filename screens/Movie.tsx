@@ -33,7 +33,7 @@ export default function MovieScreen(props: Props) {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `http://10.0.2.2:3000/movies/${props.route.params.id}`
+          `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies/${props.route.params.id}`
         );
         const responseData = SoloMovieSchema.parse(data);
 

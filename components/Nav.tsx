@@ -42,8 +42,8 @@ export default function Nav() {
     const bootstrapAsync = async () => {
       const userToken = await AsyncStorage.getItem("userToken");
       const userId = await AsyncStorage.getItem("userID");
-      setUserToken("wHm7-cSq_KbU68ENojzX");
-      setUserID("652c13ab05e23c6385d16eda");
+      setUserToken(userToken);
+      setUserID(userId);
       setIsLoading(false);
     };
     bootstrapAsync();
