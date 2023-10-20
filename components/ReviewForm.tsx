@@ -15,7 +15,7 @@ import {
 } from "../assets/zodSchema/reviewSchemaFile";
 import { z, ZodError } from "zod";
 import { useAuthContext } from "../assets/context/AuthContext";
-import { Review } from "./Review";
+import { verifyParsedData } from "../assets/tools/verifyParsedData";
 
 type ReviewFormProps = {
   reviewRef: React.LegacyRef<TextInput> | null;
@@ -55,8 +55,8 @@ export default function ReviewForm({
   useEffect(() => {
     const fetchDataForm = async (): Promise<void> => {
       try {
-        const response = await axios.get(
-          `http://10.0.2.2:3000/review/form?movieID=${id}`,
+        const { data } = await axios.get(
+          `https://site--givemovies-backend--fwddjdqr85yq.code.run/review/form?movieID=${id}`,
           {
             headers: {
               Authorization: `Bearer ${userToken}`,
@@ -64,13 +64,19 @@ export default function ReviewForm({
             },
           }
         );
-        if (response.data) {
-          const parsedData = getReviewForm.parse(response.data);
+        console.log("data form", data);
+        if (data) {
+          const parsedData: getData | null = verifyParsedData<getData | null>(
+            data,
+            getReviewForm
+          );
 
-          setEmoji(parsedData.feeling);
-          setText(parsedData.opinion);
-          setIdReview(parsedData._id);
-          setDisablePost(true);
+          if (parsedData) {
+            setEmoji(parsedData.feeling);
+            setText(parsedData.opinion);
+            setIdReview(parsedData._id);
+            setDisablePost(true);
+          }
         }
 
         setIsLoading(false);
@@ -88,17 +94,20 @@ export default function ReviewForm({
   const handlePostReview = async (event: GestureResponderEvent) => {
     event.preventDefault();
     if (emoji && text && title && id) {
-      const postData: postData = {
-        title,
-        movieID: id,
-        feeling: emoji,
-        opinion: text,
-      };
       try {
-        const dataParsed = postReviewSchema.parse(postData);
-        const response = await axios.post(
-          "http://10.0.2.2:3000/review",
-          dataParsed,
+        const parsedData = verifyParsedData<postData | null>(
+          {
+            title,
+            movieID: id,
+            feeling: emoji,
+            opinion: text,
+          },
+          postReviewSchema
+        );
+
+        const { data } = await axios.post(
+          "https://site--givemovies-backend--fwddjdqr85yq.code.run/review",
+          parsedData,
           {
             headers: {
               Authorization: `Bearer ${userToken}`,
@@ -108,11 +117,7 @@ export default function ReviewForm({
         );
         setReload(true);
       } catch (error: any) {
-        if (error instanceof ZodError) {
-          console.log(error);
-        } else {
-          console.log(error);
-        }
+        console.log(error);
       }
     } else {
       console.log("You have to complete your opinion and select an emoji");
@@ -122,13 +127,14 @@ export default function ReviewForm({
   const handlePutReview = async (event: GestureResponderEvent) => {
     event.preventDefault();
 
-    const putData: putData = { feeling: emoji, opinion: text };
-
     try {
-      const parsedData = putReviewSchema.parse(putData);
+      const parsedData = verifyParsedData<putData | null>(
+        { feeling: emoji, opinion: text },
+        putReviewSchema
+      );
 
-      const response = await axios.put(
-        `http://10.0.2.2:3000/review/${idReview}`,
+      const { data } = await axios.put(
+        `https://site--givemovies-backend--fwddjdqr85yq.code.run/review/${idReview}`,
         parsedData,
         {
           headers: {
@@ -151,17 +157,19 @@ export default function ReviewForm({
   const handleDeleteReview = async (event: GestureResponderEvent) => {
     event.preventDefault();
     try {
-      const response = await axios.delete(
-        `http://10.0.2.2:3000/review/${idReview}`,
+      const { data } = await axios.delete(
+        `https://site--givemovies-backend--fwddjdqr85yq.code.run/review/${idReview}`,
         {
           headers: {
             Authorization: `Bearer ${userToken}`,
           },
         }
       );
-      setEmoji(null);
-      setText("");
-      setReload(true);
+      if (data) {
+        setEmoji(null);
+        setText("");
+        setReload(true);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -171,7 +179,6 @@ export default function ReviewForm({
     <Text className="text-white">Loading</Text>
   ) : (
     <View className="bg-black px-4 pt-4 flex gap-4">
-      <Text className="text-white text-lg">Your review</Text>
       <View className="flex flex-row justify-around">
         <TouchableOpacity
           onPress={() => {

@@ -8,6 +8,13 @@ export const getReviewObject = z.object({
   user: z.object({
     username: z.string(),
     _id: z.string(),
+    photo: z.array(
+      z.optional(
+        z.object({
+          secure_url: z.string(),
+        })
+      )
+    ),
   }),
   movieID: z.number(),
   title: z.string(),

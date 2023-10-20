@@ -12,15 +12,12 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { z, ZodError } from "zod";
 import axios from "axios";
 import { useState } from "react";
+import { verifyParsedData } from "../assets/tools/verifyParsedData";
+import { userLoginSchema } from "../assets/zodSchema/userSchema";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
-});
-
-type loginData = z.infer<typeof loginSchema>;
+type loginData = z.infer<typeof userLoginSchema>;
 
 export default function Login({ navigation }: Props) {
   const [email, setEmail] = useState<string>("");
@@ -31,27 +28,24 @@ export default function Login({ navigation }: Props) {
 
   const handleSubmit = async (event: GestureResponderEvent) => {
     event.preventDefault();
-    const sendLoginData: loginData = { email, password };
     try {
-      const loginParsed = loginSchema.parse(sendLoginData);
+      const parsedData: loginData | null = verifyParsedData<loginData | null>(
+        { email, password },
+        userLoginSchema
+      );
 
       const response = await axios.post(
         "https://site--givemovies-backend--fwddjdqr85yq.code.run/login",
-        loginParsed,
+        parsedData,
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-
       setToken(response.data.token, response.data._id);
     } catch (error) {
-      if (error instanceof ZodError) {
-        console.log(error);
-      } else {
-        console.log(error);
-      }
+      console.log(error);
     }
   };
 
@@ -68,6 +62,7 @@ export default function Login({ navigation }: Props) {
             }}
             placeholder="doe@gmail.com"
             placeholderTextColor={"grey"}
+            inputMode="email"
           />
         </View>
         <View className=" w-[80%] mb-8">
@@ -87,7 +82,7 @@ export default function Login({ navigation }: Props) {
         <TouchableOpacity onPress={(event) => handleSubmit(event)}>
           <View className="mt-4 mb-8">
             <Text className="text-white rounded-xl text-center w-[150] p-4 bg-purple-800">
-              SIGN IN
+              LOG IN
             </Text>
           </View>
         </TouchableOpacity>

@@ -9,10 +9,13 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { RootStackParamList } from "../components/Nav";
 import { TMovie } from "./Movie";
+import { TMovies } from "./Movies";
 import { ZodError } from "zod";
 import axios from "axios";
 import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
 import Card from "../components/Card";
+import { verifyParsedData } from "../assets/tools/verifyParsedData";
+import { useAuthContext } from "../assets/context/AuthContext";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -21,30 +24,38 @@ export default function RandomMoviesScreen(props: Props) {
   const [error, setError] = useState<ZodError | null>(null);
   const [isLoading, setIsLoading] = useState<Boolean>(true);
 
+  const { userToken } = useAuthContext();
+
   const handleRandom = async (event: GestureResponderEvent) => {
     event.preventDefault();
     try {
       const number = Math.ceil(Math.random() * 472);
       const { data } = await axios.get(
-        `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies?page=${number}`
+        `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies?page=${number}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+            "Content-Type": "Application/json",
+          },
+        }
       );
-      const responseData = MoviesSchema.parse(data);
-      console.log(JSON.stringify(responseData, null, 2));
 
-      const movieNumber = Math.ceil(
-        Math.random() * responseData.results.length
+      const parsedData: TMovies | null = verifyParsedData<TMovies | null>(
+        data,
+        MoviesSchema
       );
 
-      setMovie(responseData.results[movieNumber]);
+      if (parsedData) {
+        const movieNumber = Math.ceil(
+          Math.random() * parsedData.results.length
+        );
+
+        setMovie(parsedData.results[movieNumber]);
+      }
 
       setIsLoading(false);
     } catch (error) {
-      if (error instanceof ZodError) {
-        console.log("zod error");
-        console.log(error);
-      } else {
-        console.log(error);
-      }
+      console.log(error);
     }
   };
 

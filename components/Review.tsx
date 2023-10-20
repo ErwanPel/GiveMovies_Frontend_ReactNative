@@ -7,6 +7,7 @@ import { getReviewSchema } from "../assets/zodSchema/reviewSchemaFile";
 import { useAuthContext } from "../assets/context/AuthContext";
 import ImageProfile from "./ImageProfile";
 import { Entypo } from "@expo/vector-icons";
+import { verifyParsedData } from "../assets/tools/verifyParsedData";
 
 type ReviewProps = {
   reviewRef: React.LegacyRef<TextInput> | null;
@@ -21,14 +22,14 @@ export default function Review({ reviewRef, id, title }: ReviewProps) {
   const [isLoading, setIsLoading] = useState<Boolean>(true);
   const [error, setError] = useState(null);
   const [reload, setReload] = useState<Boolean>(false);
-
+  console.log(JSON.stringify(data, null, 2));
   const { userToken } = useAuthContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `http://10.0.2.2:3000/review?movieID=${id}`,
+        const { data } = await axios.get(
+          `https://site--givemovies-backend--fwddjdqr85yq.code.run/review?movieID=${id}`,
           {
             headers: {
               Authorization: `Bearer ${userToken}`,
@@ -36,13 +37,14 @@ export default function Review({ reviewRef, id, title }: ReviewProps) {
             },
           }
         );
-        console.log("data", response.data);
-        if (response.data.length === 0) {
-          console.log("dans le data");
-          setData(response.data);
+
+        if (data.length === 0) {
+          setData(data);
         } else {
-          console.log("dans le parse");
-          const parsedData = getReviewSchema.parse(response.data);
+          const parsedData: Review | null = verifyParsedData<Review | null>(
+            data,
+            getReviewSchema
+          );
           setData(parsedData);
         }
         setIsLoading(false);
@@ -72,17 +74,32 @@ export default function Review({ reviewRef, id, title }: ReviewProps) {
         setReload={setReload}
         reload={reload}
       />
-      <ScrollView horizontal>
+      <ScrollView horizontal className="border-zinc-400 border-t-2 ">
         {data?.map((rev) => {
           return (
             <View
-              className="border-white border-2 w-[290] p-3 rounded-3xl mx-4 mb-8"
+              className="border-zinc-300  border-2 w-[290] p-3 rounded-3xl mx-4 my-8"
               key={rev._id}
             >
-              <View className="flex-row justify-between items-center ml-2">
-                <View className="flex-row items-center">
-                  <ImageProfile sizeBorder="w-[40] h-[40]" sizeImage={20} />
-                  <Text className="text-white ml-4">{rev.user.username}</Text>
+              <View className="flex-row justify-between items-center ml-1">
+                <View>
+                  <View className="flex-row items-center">
+                    <ImageProfile
+                      file={
+                        rev.user.photo[0]?.secure_url
+                          ? rev.user.photo[0]?.secure_url
+                          : null
+                      }
+                      sizeBorder="w-[40] h-[40]"
+                      sizeImage={20}
+                    />
+                    <Text className="text-white text-base ml-4">
+                      {rev.user.username}
+                    </Text>
+                  </View>
+                  <Text className="text-white mt-2 italic">
+                    Post on {rev.date}
+                  </Text>
                 </View>
 
                 <View className="justify-center items-center pt-1 w-[80]">
@@ -108,7 +125,7 @@ export default function Review({ reviewRef, id, title }: ReviewProps) {
                   )}
                 </View>
               </View>
-              <View className="mt-4 ml-2 flex-row ">
+              <View className="mt-4 ml-1">
                 <Text className="text-white text-justify">{rev.opinion}</Text>
               </View>
             </View>

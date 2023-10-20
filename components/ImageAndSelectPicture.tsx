@@ -10,23 +10,61 @@ import {
 type ImageAndSelectPictureProps = {
   picture: string | null;
   setPicture: React.Dispatch<React.SetStateAction<string | null>>;
+  sizeBorder: string;
+  sizeImage: number;
+  changePicture?: boolean;
+  setChangePicture?: React.Dispatch<React.SetStateAction<boolean>>;
+  enableUpdateButton?: boolean;
+  setEnableUpdateButton?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function ImageAndSelectPicture({
   picture,
   setPicture,
+  sizeBorder,
+  sizeImage,
+  changePicture,
+  setChangePicture,
+  enableUpdateButton,
+  setEnableUpdateButton,
 }: ImageAndSelectPictureProps) {
-  console.log(picture);
+  const enableModifyProfil = () => {
+    if (setChangePicture && setEnableUpdateButton) {
+      setChangePicture(true);
+      setEnableUpdateButton(false);
+    }
+  };
+
   return (
     <View className="flex-row items-center mb-6">
-      <ImageProfile file={picture} sizeBorder="w-[80] h-[80]" sizeImage={28} />
+      <ImageProfile
+        file={picture}
+        sizeBorder={sizeBorder}
+        sizeImage={sizeImage}
+      />
       <View className="ml-12  gap-y-7 items-center">
         <TouchableOpacity
-          onPress={() => getPermissionAndGetPicture(setPicture)}
+          onPress={() => {
+            !changePicture && enableModifyProfil();
+            getPermissionAndGetPicture(
+              setPicture,
+              setChangePicture,
+              setEnableUpdateButton
+            );
+          }}
         >
           <FontAwesome name="file-photo-o" size={26} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => getPermissionAndCamera(setPicture)}>
+        <TouchableOpacity
+          onPress={() => {
+            !changePicture && enableModifyProfil();
+            getPermissionAndCamera(
+              setPicture,
+              setChangePicture,
+              setEnableUpdateButton
+            );
+          }}
+        >
           <FontAwesome name="camera" size={26} color="white" />
         </TouchableOpacity>
       </View>

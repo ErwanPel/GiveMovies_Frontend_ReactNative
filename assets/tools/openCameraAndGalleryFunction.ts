@@ -2,7 +2,9 @@ import * as ImagePicker from "expo-image-picker";
 import { Platform } from "react-native";
 
 export const getPermissionAndGetPicture = async (
-  setPicture: React.Dispatch<React.SetStateAction<string | null>>
+  setPicture: React.Dispatch<React.SetStateAction<string | null>>,
+  setChangePicture?: React.Dispatch<React.SetStateAction<boolean>>,
+  setEnableUpdateButton?: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status === "granted") {
@@ -13,11 +15,18 @@ export const getPermissionAndGetPicture = async (
 
     if (result.canceled) {
       alert("no picture is selected");
+      if (setChangePicture && setEnableUpdateButton) {
+        setChangePicture(false);
+        setEnableUpdateButton(true);
+      }
     } else {
-      console.log(JSON.stringify(result, null, 2));
       setPicture(result.assets[0].uri);
     }
   } else {
+    if (setChangePicture && setEnableUpdateButton) {
+      setChangePicture(false);
+      setEnableUpdateButton(true);
+    }
     if (Platform.OS === "android") {
       alert(
         "acces to librairy denied. If you want enable the librairy's access, you have to change change permission in your phone : Setting => Applications => AirBNB app => Authorizations => Photos & videos => authorize"
@@ -31,7 +40,9 @@ export const getPermissionAndGetPicture = async (
 };
 
 export const getPermissionAndCamera = async (
-  setPicture: React.Dispatch<React.SetStateAction<string | null>>
+  setPicture: React.Dispatch<React.SetStateAction<string | null>>,
+  setChangePicture?: React.Dispatch<React.SetStateAction<boolean>>,
+  setEnableUpdateButton?: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   const { status } = await ImagePicker.requestCameraPermissionsAsync();
   if (status === "granted") {
@@ -41,11 +52,19 @@ export const getPermissionAndCamera = async (
     });
 
     if (result.canceled === true) {
+      if (setChangePicture && setEnableUpdateButton) {
+        setChangePicture(false);
+        setEnableUpdateButton(true);
+      }
       alert("no picture is selected");
     } else {
       setPicture(result.assets[0].uri);
     }
   } else {
+    if (setChangePicture && setEnableUpdateButton) {
+      setChangePicture(false);
+      setEnableUpdateButton(true);
+    }
     if (Platform.OS === "android") {
       alert(
         "acces to camera denied. If you want enable the camera's access, you have to change change permission in your phone : Setting => Applications => AirBNB app => Authorizations => Camera => authorize"

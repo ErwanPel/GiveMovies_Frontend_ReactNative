@@ -16,6 +16,8 @@ import { SoloMovieSchema } from "../assets/zodSchema/moviesSchema";
 import Review from "../components/Review";
 import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
+import { verifyParsedData } from "../assets/tools/verifyParsedData";
+import { useAuthContext } from "../assets/context/AuthContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Movie">;
 
@@ -29,23 +31,28 @@ export default function MovieScreen(props: Props) {
 
   const reviewRef = useRef<TextInput | null>(null);
 
+  const { userToken } = useAuthContext();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies/${props.route.params.id}`
+          `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies/${props.route.params.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+              "Content-Type": "Application/json",
+            },
+          }
         );
-        const responseData = SoloMovieSchema.parse(data);
+        const parsedData: TMovie | null = verifyParsedData<TMovie | null>(
+          data,
+          SoloMovieSchema
+        );
+        setData(parsedData);
 
-        setData(responseData);
-        console.log(responseData.id);
         setIsLoading(false);
       } catch (error) {
-        if (error instanceof ZodError) {
-          setError(new Error("erreur Zod"));
-        } else {
-          setError(new Error("error occured"));
-        }
         console.log(error);
       }
     };

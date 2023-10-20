@@ -1,5 +1,4 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import { Movies } from "../screens/Movies";
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,

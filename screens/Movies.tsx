@@ -10,37 +10,45 @@ import { TMovie } from "./Movie";
 import { Picker } from "@react-native-picker/picker";
 import Card from "../components/Card";
 import { FontAwesome } from "@expo/vector-icons";
+import { verifyParsedData } from "../assets/tools/verifyParsedData";
+import { useAuthContext } from "../assets/context/AuthContext";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
-export type Movies = z.infer<typeof MoviesSchema>;
+export type TMovies = z.infer<typeof MoviesSchema>;
 
 export default function MoviesScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<Movies | null>(null);
+  const [data, setData] = useState<TMovies | null>(null);
   const [selectedPage, setSelectedPage] = useState<number>(1);
 
   let numberPage = Array.from(Array(473).keys());
+
+  const { userToken } = useAuthContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies?page=${selectedPage}`
+          `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies?page=${selectedPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+              "Content-Type": "Application/json",
+            },
+          }
         );
-        const responseData = MoviesSchema.parse(data);
 
-        setData(responseData);
+        const parsedData: TMovies | null = verifyParsedData<TMovie | null>(
+          data,
+          MoviesSchema
+        );
+        setData(parsedData);
 
         setIsLoading(false);
       } catch (error) {
-        if (error instanceof ZodError) {
-          setError(new Error("erreur Zod"));
-          console.log(error);
-        } else {
-          console.log(error);
-        }
+        console.log(error);
       }
     };
     fetchData();
