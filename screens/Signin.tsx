@@ -17,6 +17,7 @@ import ImageAndSelectPicture from "../components/ImageAndSelectPicture";
 import { userSignInSchema } from "../assets/zodSchema/userSchema";
 import { setPictureToUpload } from "../assets/tools/setPictureToUpload";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
+import LottiesLoading from "../components/LottiesLoading";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -28,17 +29,37 @@ export default function Signin({ navigation }: Props) {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [error, setError] = useState<string | ZodError | Error | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // State Error :
+  const [error, setError] = useState<string>("");
+  const [zodError, setZodError] = useState<ZodError | null>(null);
+  const [passwordError, setPasswordError] = useState<string>("");
+  const [usernameError, setUsernameError] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
 
   const { setToken } = useAuthContext();
 
+  const reloadError = () => {
+    setZodError(null);
+    setPasswordError("");
+    setUsernameError("");
+    setEmailError("");
+    setError("");
+  };
+
   const handleSubmit = async (event: GestureResponderEvent) => {
     event.preventDefault();
+
+    reloadError();
     if (password === confirmPassword) {
       try {
+        setIsLoading(true);
         const parseData: SignData = verifyParsedData<SignData | null>(
           { username, email, password, picture },
-          userSignInSchema
+          userSignInSchema,
+          zodError,
+          setZodError
         );
 
         const formData = new FormData();
@@ -50,36 +71,40 @@ export default function Signin({ navigation }: Props) {
         formData.append("username", parseData.username);
         formData.append("email", parseData.email);
         formData.append("password", parseData.password);
-        if (Platform.OS === "ios") {
-          const response = await axios.post(
-            "https://site--givemovies-backend--fwddjdqr85yq.code.run/signin",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-          setToken(response.data.token, response.data._id);
-        } else {
-          const response = await axios.post(
-            "https://site--givemovies-backend--fwddjdqr85yq.code.run/signin",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-          setToken(response.data.token, response.data._id);
-        }
+
+        const response = await axios.post(
+          "https://site--givemovies-backend--fwddjdqr85yq.code.run/signin",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        alert("Your account has been created");
+        setIsLoading(false);
+        setToken(response.data.token, response.data._id);
       } catch (error: any) {
-        console.log(error);
+        if (zodError) {
+          zodError.issues.map((error) => {
+            if (error.path[0] === "username") {
+              setUsernameError(error.message);
+            } else if (error.path[0] === "email") {
+              setEmailError(error.message);
+            } else if (error.path[0] === "password") {
+              setPasswordError(error.message);
+            }
+          });
+        }
+        if (error.response?.data) setError(error.response.data.message);
+        setIsLoading(false);
       }
     } else {
-      setError("The password and confirm passwords are differents");
+      setPasswordError("The password and confirm password are differents");
     }
   };
+
+  console.log("PE", passwordError);
 
   return (
     <KeyboardAwareScrollView>
@@ -94,34 +119,53 @@ export default function Signin({ navigation }: Props) {
         <View className=" w-[80%] mb-8">
           <Text className="text-slate-100 ml-3 text-base p-2">Pseudo</Text>
           <TextInput
-            className="bg-white px-6 py-1 rounded-3xl  border-green-600 border-4"
+            className={
+              usernameError
+                ? "bg-red-200 px-6 py-1 rounded-3xl"
+                : "bg-slate-100 px-6 py-1 rounded-3xl"
+            }
             onChangeText={(text) => {
-              setError("");
               setUsername((prev) => text);
             }}
             placeholder="John Doe"
             placeholderTextColor={"grey"}
           />
+          {usernameError && (
+            <Text className="text-red-500 text-center mt-2">
+              {usernameError}
+            </Text>
+          )}
         </View>
+
         <View className=" w-[80%] mb-8">
           <Text className="text-slate-100 ml-3 text-base p-2">Email</Text>
           <TextInput
-            className="bg-white px-6 py-1 rounded-3xl border-green-600 border-4"
+            className={
+              emailError
+                ? "bg-red-200 px-6 py-1 rounded-3xl"
+                : "bg-slate-100 px-6 py-1 rounded-3xl"
+            }
             onChangeText={(text) => {
-              setError("");
               setEmail((prev) => text);
             }}
             placeholder="doe@gmail.com"
             placeholderTextColor={"grey"}
             inputMode="email"
           />
+          {emailError && (
+            <Text className="text-red-500 text-center mt-2">{emailError}</Text>
+          )}
         </View>
+
         <View className=" w-[80%] mb-8">
           <Text className="text-slate-100 ml-3 text-base p-2 ">Password</Text>
           <TextInput
-            className="bg-white px-6 py-1 rounded-3xl border-green-600 border-4"
+            className={
+              passwordError
+                ? "bg-red-200 px-6 py-1 rounded-3xl"
+                : "bg-slate-100 px-6 py-1 rounded-3xl"
+            }
             onChangeText={(text) => {
-              setError("");
               setPassword((prev) => text);
             }}
             placeholder="test"
@@ -134,23 +178,37 @@ export default function Signin({ navigation }: Props) {
             Confirm your password
           </Text>
           <TextInput
-            className="bg-white px-6 py-1 rounded-3xl border-green-600 border-4"
+            className={
+              passwordError
+                ? "bg-red-200 px-6 py-1 rounded-3xl"
+                : "bg-slate-100 px-6 py-1 rounded-3xl"
+            }
             onChangeText={(text) => {
-              setError("");
               setConfirmPassword((prev) => text);
             }}
             placeholder="test"
             placeholderTextColor={"grey"}
             secureTextEntry
           />
-        </View>
-        <TouchableOpacity onPress={(event) => handleSubmit(event)}>
-          <View className="mt-4 mb-8">
-            <Text className="text-white rounded-xl text-center w-[150] p-4 bg-purple-800">
-              SIGN IN
+          {passwordError && (
+            <Text className="text-red-500 text-center mt-2">
+              {passwordError}
             </Text>
-          </View>
-        </TouchableOpacity>
+          )}
+        </View>
+
+        {isLoading ? (
+          <LottiesLoading />
+        ) : (
+          <TouchableOpacity onPress={(event) => handleSubmit(event)}>
+            <View className="mt-4 mb-8">
+              <Text className="text-white rounded-xl text-center w-[150] p-4 bg-purple-800">
+                SIGN IN
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
+        {error && <Text className="text-red-500 text-center">{error}</Text>}
         <TouchableOpacity onPress={() => navigation.navigate("Login")}>
           <View>
             <Text className="text-white rounded-xl text-center underline  decoration-white p-4 ">

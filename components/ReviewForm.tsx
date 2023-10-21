@@ -16,6 +16,7 @@ import {
 import { z, ZodError } from "zod";
 import { useAuthContext } from "../assets/context/AuthContext";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
+import LottiesLoading from "./LottiesLoading";
 
 type ReviewFormProps = {
   reviewRef: React.LegacyRef<TextInput> | null;
@@ -41,10 +42,14 @@ export default function ReviewForm({
   const [emoji, setEmoji] = useState<"Good" | "Neutral" | "Bad" | null>(null);
   const [text, setText] = useState<string>("");
   const [idReview, setIdReview] = useState<string>("");
-  const [error, setError] = useState<Error | string | null>(null);
-  const [isLoading, setIsLoading] = useState<Boolean>(true);
-  const [activateUpdate, setActivateUpdate] = useState<Boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [activateUpdate, setActivateUpdate] = useState<boolean>(true);
   const [disablePost, setDisablePost] = useState<Boolean>(false);
+  const [zodError, setZodError] = useState<ZodError | null>(null);
+  const [isUploadedPost, setIsUploadedPost] = useState<boolean>(false);
+  const [isUploadedPut, setIsUploadedPut] = useState<boolean>(false);
+  const [isUploadedDelete, setIsUploadedDelete] = useState<boolean>(false);
 
   const { userToken, userID } = useAuthContext();
 
@@ -64,11 +69,13 @@ export default function ReviewForm({
             },
           }
         );
-        console.log("data form", data);
+
         if (data) {
           const parsedData: getData | null = verifyParsedData<getData | null>(
             data,
-            getReviewForm
+            getReviewForm,
+            zodError,
+            setZodError
           );
 
           if (parsedData) {
@@ -95,6 +102,7 @@ export default function ReviewForm({
     event.preventDefault();
     if (emoji && text && title && id) {
       try {
+        setIsUploadedPost(true);
         const parsedData = verifyParsedData<postData | null>(
           {
             title,
@@ -102,7 +110,9 @@ export default function ReviewForm({
             feeling: emoji,
             opinion: text,
           },
-          postReviewSchema
+          postReviewSchema,
+          zodError,
+          setZodError
         );
 
         const { data } = await axios.post(
@@ -115,48 +125,59 @@ export default function ReviewForm({
             },
           }
         );
+        setError("");
+        setIsUploadedPost(false);
         setReload(true);
       } catch (error: any) {
         console.log(error);
       }
     } else {
-      console.log("You have to complete your opinion and select an emoji");
+      setError("You have to complete your opinion and select an emoji");
     }
   };
 
   const handlePutReview = async (event: GestureResponderEvent) => {
     event.preventDefault();
+    if (emoji && text) {
+      setIsUploadedPut(true);
+      try {
+        const parsedData = verifyParsedData<putData | null>(
+          { feeling: emoji, opinion: text },
+          putReviewSchema,
+          zodError,
+          setZodError
+        );
 
-    try {
-      const parsedData = verifyParsedData<putData | null>(
-        { feeling: emoji, opinion: text },
-        putReviewSchema
-      );
-
-      const { data } = await axios.put(
-        `https://site--givemovies-backend--fwddjdqr85yq.code.run/review/${idReview}`,
-        parsedData,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-            "Content-Type": "Application/json",
-          },
+        const { data } = await axios.put(
+          `https://site--givemovies-backend--fwddjdqr85yq.code.run/review/${idReview}`,
+          parsedData,
+          {
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+              "Content-Type": "Application/json",
+            },
+          }
+        );
+        setIsUploadedPut(false);
+        setActivateUpdate(true);
+        setError("");
+        setReload(true);
+      } catch (error: any) {
+        if (error instanceof ZodError) {
+          console.log(error);
+        } else {
+          console.log(error);
         }
-      );
-
-      setReload(true);
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        console.log(error);
-      } else {
-        console.log(error);
       }
+    } else {
+      setError("You have to complete your opinion and select an emoji");
     }
   };
 
   const handleDeleteReview = async (event: GestureResponderEvent) => {
     event.preventDefault();
     try {
+      setIsUploadedDelete(true);
       const { data } = await axios.delete(
         `https://site--givemovies-backend--fwddjdqr85yq.code.run/review/${idReview}`,
         {
@@ -166,6 +187,8 @@ export default function ReviewForm({
         }
       );
       if (data) {
+        setIsUploadedDelete(false);
+        setDisablePost(false);
         setEmoji(null);
         setText("");
         setReload(true);
@@ -248,41 +271,49 @@ export default function ReviewForm({
         className="bg-white my-4 p-1.5 text-lg"
       />
       {!disablePost ? (
-        <TouchableOpacity
-          className="self-center"
-          onPress={(event) => handlePostReview(event)}
-        >
-          <Text className="text-white bg-purple-500 p-4 rounded-xl">
-            SEND YOUR REVIEW
-          </Text>
-        </TouchableOpacity>
+        <View className="self-center">
+          {isUploadedPost ? (
+            <LottiesLoading />
+          ) : (
+            <TouchableOpacity onPress={(event) => handlePostReview(event)}>
+              <Text className="text-white bg-purple-500 p-4 rounded-xl">
+                SEND YOUR REVIEW
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
       ) : (
         <View className="flex-row justify-between">
-          <TouchableOpacity
-            className="self-center"
-            onPress={(event) => handlePutReview(event)}
-            disabled={typeof activateUpdate === "boolean" && activateUpdate}
-          >
-            <Text
-              className={
-                activateUpdate
-                  ? "text-white w-[130] text-center bg-gray-600 p-4 rounded-xl"
-                  : "text-white w-[130] text-center bg-blue-600 p-4 rounded-xl"
-              }
+          {isUploadedPut ? (
+            <LottiesLoading />
+          ) : (
+            <TouchableOpacity
+              onPress={(event) => handlePutReview(event)}
+              disabled={typeof activateUpdate === "boolean" && activateUpdate}
             >
-              UPDATE YOUR REVIEW
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="self-center"
-            onPress={(event) => handleDeleteReview(event)}
-          >
-            <Text className="text-white w-[130] text-center bg-red-600 p-4 rounded-xl">
-              DELETE YOUR REVIEW
-            </Text>
-          </TouchableOpacity>
+              <Text
+                className={
+                  activateUpdate
+                    ? "text-white w-[130] text-center bg-gray-600 p-4 rounded-xl"
+                    : "text-white w-[130] text-center bg-blue-600 p-4 rounded-xl"
+                }
+              >
+                UPDATE YOUR REVIEW
+              </Text>
+            </TouchableOpacity>
+          )}
+          {isUploadedDelete ? (
+            <LottiesLoading />
+          ) : (
+            <TouchableOpacity onPress={(event) => handleDeleteReview(event)}>
+              <Text className="text-white w-[130] text-center bg-red-600 p-4 rounded-xl">
+                DELETE YOUR REVIEW
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
+      {error && <Text className="text-red-500 text-center">{error}</Text>}
     </View>
   );
 }

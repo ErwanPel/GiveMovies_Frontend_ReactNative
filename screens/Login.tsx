@@ -14,6 +14,7 @@ import axios from "axios";
 import { useState } from "react";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
 import { userLoginSchema } from "../assets/zodSchema/userSchema";
+import LottiesLoading from "../components/LottiesLoading";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -22,16 +23,33 @@ type loginData = z.infer<typeof userLoginSchema>;
 export default function Login({ navigation }: Props) {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // state Error
+  const [emailError, setEmailError] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<string>("");
+  const [error, setError] = useState<string | null>("");
+  const [zodError, setZodError] = useState<ZodError | null>(null);
 
   const { setToken } = useAuthContext();
 
+  const reloadError = () => {
+    setZodError(null);
+    setPasswordError("");
+    setEmailError("");
+    setError("");
+  };
+
   const handleSubmit = async (event: GestureResponderEvent) => {
     event.preventDefault();
+    setIsLoading(true);
+    reloadError();
     try {
       const parsedData: loginData | null = verifyParsedData<loginData | null>(
         { email, password },
-        userLoginSchema
+        userLoginSchema,
+        zodError,
+        setZodError
       );
 
       const response = await axios.post(
@@ -43,9 +61,20 @@ export default function Login({ navigation }: Props) {
           },
         }
       );
+      setIsLoading(false);
       setToken(response.data.token, response.data._id);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      if (zodError) {
+        zodError.issues.map((error) => {
+          if (error.path[0] === "email") {
+            setEmailError(error.message);
+          } else if (error.path[0] === "password") {
+            setPasswordError(error.message);
+          }
+        });
+      }
+      if (error.response?.data) setError(error.response.data.message);
+      setIsLoading(false);
     }
   };
 
@@ -55,22 +84,31 @@ export default function Login({ navigation }: Props) {
         <View className=" w-[80%] mb-8">
           <Text className="text-slate-100 ml-3 text-base p-2">Email</Text>
           <TextInput
-            className="bg-white px-6 py-1 rounded-3xl border-green-600 border-4"
+            className={
+              emailError
+                ? "bg-red-200 px-6 py-1 rounded-3xl"
+                : "bg-slate-100 px-6 py-1 rounded-3xl"
+            }
             onChangeText={(text) => {
-              setError("");
               setEmail((prev) => text);
             }}
             placeholder="doe@gmail.com"
             placeholderTextColor={"grey"}
             inputMode="email"
           />
+          {emailError && (
+            <Text className="text-red-500 text-center mt-2">{emailError}</Text>
+          )}
         </View>
         <View className=" w-[80%] mb-8">
           <Text className="text-slate-100 ml-3 text-base p-2 ">Password</Text>
           <TextInput
-            className="bg-white px-6 py-1 rounded-3xl border-green-600 border-4"
+            className={
+              passwordError
+                ? "bg-red-200 px-6 py-1 rounded-3xl"
+                : "bg-slate-100 px-6 py-1 rounded-3xl"
+            }
             onChangeText={(text) => {
-              setError("");
               setPassword((prev) => text);
             }}
             placeholder="test"
@@ -79,13 +117,17 @@ export default function Login({ navigation }: Props) {
           />
         </View>
 
-        <TouchableOpacity onPress={(event) => handleSubmit(event)}>
-          <View className="mt-4 mb-8">
-            <Text className="text-white rounded-xl text-center w-[150] p-4 bg-purple-800">
-              LOG IN
-            </Text>
-          </View>
-        </TouchableOpacity>
+        {isLoading ? (
+          <LottiesLoading />
+        ) : (
+          <TouchableOpacity onPress={(event) => handleSubmit(event)}>
+            <View className="mt-4 mb-8">
+              <Text className="text-white rounded-xl text-center w-[150] p-4 bg-purple-800">
+                LOG IN
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
         {error && <Text className="text-red-700 mt-4">{error}</Text>}
         <TouchableOpacity onPress={() => navigation.navigate("Signin")}>
           <View>

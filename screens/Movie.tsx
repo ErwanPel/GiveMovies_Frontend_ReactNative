@@ -28,6 +28,7 @@ export default function MovieScreen(props: Props) {
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<TMovie | null>(null);
   const [showOverView, setShowOverview] = useState<boolean>(false);
+  const [zodError, setZodError] = useState<ZodError | null>(null);
 
   const reviewRef = useRef<TextInput | null>(null);
 
@@ -47,7 +48,9 @@ export default function MovieScreen(props: Props) {
         );
         const parsedData: TMovie | null = verifyParsedData<TMovie | null>(
           data,
-          SoloMovieSchema
+          SoloMovieSchema,
+          zodError,
+          setZodError
         );
         setData(parsedData);
 

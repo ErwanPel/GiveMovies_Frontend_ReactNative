@@ -21,8 +21,9 @@ export default function Review({ reviewRef, id, title }: ReviewProps) {
   const [data, setData] = useState<Review | null>(null);
   const [isLoading, setIsLoading] = useState<Boolean>(true);
   const [error, setError] = useState(null);
+  const [zodError, setZodError] = useState<ZodError | null>(null);
   const [reload, setReload] = useState<Boolean>(false);
-  console.log(JSON.stringify(data, null, 2));
+
   const { userToken } = useAuthContext();
 
   useEffect(() => {
@@ -43,7 +44,9 @@ export default function Review({ reviewRef, id, title }: ReviewProps) {
         } else {
           const parsedData: Review | null = verifyParsedData<Review | null>(
             data,
-            getReviewSchema
+            getReviewSchema,
+            zodError,
+            setZodError
           );
           setData(parsedData);
         }

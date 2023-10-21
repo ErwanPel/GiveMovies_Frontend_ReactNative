@@ -14,7 +14,7 @@ export const userSignInSchema = z.object({
   password: z.string().min(8, {
     message: "the password needs at least 8 characters",
   }),
-  picture: pictureSchema,
+  picture: z.optional(pictureSchema),
 });
 
 export const userLoginSchema = z.object({
@@ -25,7 +25,7 @@ export const userLoginSchema = z.object({
 export const getUserSchema = z.object({
   _id: z.string(),
   username: z.string(),
-  email: z.string(),
+  email: z.string().email(),
   photo: z.array(
     z.optional(
       z.object({

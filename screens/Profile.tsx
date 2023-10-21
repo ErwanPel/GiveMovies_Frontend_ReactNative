@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   TextInput,
   GestureResponderEvent,
+  Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import axios from "axios";
@@ -18,8 +19,9 @@ import {
   pictureSchema,
   emailSchema,
 } from "../assets/zodSchema/userSchema";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { setPictureToUpload } from "../assets/tools/setPictureToUpload";
+import LottiesLoading from "../components/LottiesLoading";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 
@@ -31,7 +33,6 @@ type TEmail = z.infer<typeof emailSchema>;
 
 export default function ProfileScreen(props: Props) {
   const [email, setEmail] = useState<string>("");
-  const [error, setError] = useState<string | Error | null>(null);
   const [picture, setPicture] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [picturePresent, setPicturePresent] = useState<boolean>(false);
@@ -39,16 +40,61 @@ export default function ProfileScreen(props: Props) {
   const [changeText, setChangeText] = useState<boolean>(false);
   const [changePicture, setChangePicture] = useState<boolean>(true);
   const [reload, setReload] = useState<boolean>(false);
+  const [isUpdate, setIsUpdate] = useState<boolean>(false);
+  const [isUploadDeletePicture, setIsUploadDeletePicture] =
+    useState<boolean>(false);
+  const [isUploadDeleteUser, setIsUploadDeleteUser] = useState<boolean>(false);
+
+  // error State
+  const [zodError, setZodError] = useState<ZodError | null>(null);
+  const [emailError, setEmailError] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const { userToken, setToken } = useAuthContext();
 
+  const reloadProfileScreen = () => {
+    setEnableUpdateButton(true);
+    setChangeText(false);
+    setChangePicture(false);
+    setReload(false);
+  };
+
+  const reloadError = () => {
+    setZodError(null);
+    setEmailError("");
+    setError("");
+  };
+
+  const alertButtonDeleteUser = (event: GestureResponderEvent) => {
+    event.persist();
+    setIsUploadDeleteUser(true);
+    Alert.alert(
+      "Delete User",
+      "Do you want delete your account ?",
+      [
+        { text: "Yes", onPress: () => handleDeleteUser(event) },
+        {
+          text: "No",
+          onPress: () => setIsUploadDeleteUser(false),
+          style: "cancel",
+        },
+      ],
+      {
+        cancelable: true,
+      }
+    );
+  };
+
   const handleUpdate = async (event: GestureResponderEvent) => {
     event.preventDefault();
+    setIsUpdate(true);
     if (changePicture) {
       try {
         const parsedData: TPicture | null = verifyParsedData<TPicture | null>(
           picture,
-          pictureSchema
+          pictureSchema,
+          zodError,
+          setZodError
         );
 
         const formData = new FormData();
@@ -66,6 +112,8 @@ export default function ProfileScreen(props: Props) {
               },
             }
           );
+          alert(data.message);
+          setPicturePresent(true);
         } else {
           const { data } = await axios.post(
             "https://site--givemovies-backend--fwddjdqr85yq.code.run/profile/picture",
@@ -77,11 +125,9 @@ export default function ProfileScreen(props: Props) {
               },
             }
           );
+          alert(data.message);
+          setPicturePresent(true);
         }
-        setEnableUpdateButton(true);
-        setChangeText(false);
-        setChangePicture(false);
-        setPicturePresent(true);
       } catch (error: any) {
         console.log(error);
       }
@@ -91,7 +137,9 @@ export default function ProfileScreen(props: Props) {
       try {
         const parsedData: TEmail | null = verifyParsedData<TEmail | null>(
           { email },
-          emailSchema
+          emailSchema,
+          zodError,
+          setZodError
         );
 
         const { data } = await axios.put(
@@ -104,19 +152,28 @@ export default function ProfileScreen(props: Props) {
             },
           }
         );
-        setEnableUpdateButton(true);
-        setChangeText(false);
-        setChangePicture(false);
+        alert(data.message);
       } catch (error: any) {
-        console.log(error);
+        if (zodError) {
+          zodError.issues.map((error) => {
+            if (error.path[0] === "email") {
+              setEmailError(error.message);
+            }
+          });
+        }
+        if (error.response?.data) setError(error.response.data.message);
       }
     }
-    setReload(true);
+    setIsUpdate(false);
+    reloadError();
+    reloadProfileScreen();
   };
 
   const handleDeletePicture = async (event: GestureResponderEvent) => {
     event.preventDefault();
+    reloadError();
     try {
+      setIsUploadDeletePicture(true);
       const { data } = await axios.delete(
         "https://site--givemovies-backend--fwddjdqr85yq.code.run/profile/picture",
         {
@@ -125,21 +182,20 @@ export default function ProfileScreen(props: Props) {
           },
         }
       );
+      alert(data.message);
+      setIsUploadDeletePicture(false);
       setPicture(null);
-      setEnableUpdateButton(true);
       setPicturePresent(false);
-      setChangeText(false);
-      setChangePicture(false);
-      setReload(true);
-      console.log(data);
+      reloadProfileScreen();
+      reloadError();
     } catch (error: any) {
-      console.log(JSON.stringify(error.response, null, 2));
+      console.log(error);
     }
   };
 
   const handleDeleteUser = async (event: GestureResponderEvent) => {
     event.preventDefault();
-    console.log(userToken);
+    reloadError();
     try {
       const { data } = await axios.delete(
         "https://site--givemovies-backend--fwddjdqr85yq.code.run/profile/user",
@@ -149,9 +205,9 @@ export default function ProfileScreen(props: Props) {
           },
         }
       );
-
+      alert(data.message);
+      setIsUploadDeleteUser(false);
       setToken(null, null);
-      setReload(true);
     } catch (error) {
       console.log(error);
     }
@@ -172,13 +228,14 @@ export default function ProfileScreen(props: Props) {
 
         const parsedData: TgetUser | null = verifyParsedData<TgetUser | null>(
           data,
-          getUserSchema
+          getUserSchema,
+          zodError,
+          setZodError
         );
-        console.log(JSON.stringify(parsedData, null, 2));
+
         if (parsedData) {
           setEmail(parsedData.email);
           if (parsedData.photo[0]?.secure_url) {
-            console.log("parse get pic", parsedData.photo[0]);
             setPicture(parsedData.photo[0]?.secure_url);
             setPicturePresent(true);
           }
@@ -188,12 +245,20 @@ export default function ProfileScreen(props: Props) {
         console.log(error);
       }
     };
-    setReload(false);
+    reloadProfileScreen();
     setIsLoading(true);
     getData();
   }, [reload]);
 
-  console.log(picturePresent, reload, userToken);
+  console.log(
+    "CP",
+    changePicture,
+    "CT",
+    changeText,
+    email,
+    "eB",
+    enableUpdateButton
+  );
 
   return isLoading ? (
     <Text>Loading</Text>
@@ -211,63 +276,91 @@ export default function ProfileScreen(props: Props) {
           setEnableUpdateButton={setEnableUpdateButton}
         />
 
-        <View className=" w-[80%] my-8">
+        <View className=" w-[80%] mb-8">
           <Text className="text-slate-100 ml-3 text-base p-2">Email</Text>
           <TextInput
-            className="bg-white px-6 py-1 rounded-3xl border-green-600 border-4"
+            className={
+              emailError
+                ? "bg-red-200 px-6 py-1 rounded-3xl"
+                : "bg-slate-100 px-6 py-1 rounded-3xl"
+            }
             onChangeText={(text) => {
-              setError("");
-              setEmail((prev) => text);
               setChangeText(true);
               setEnableUpdateButton(false);
+              setEmail((prev) => text);
             }}
             placeholder="doe@gmail.com"
             placeholderTextColor={"grey"}
             inputMode="email"
             value={email}
           />
+          {emailError && (
+            <Text className="text-red-500 text-center mt-2">{emailError}</Text>
+          )}
         </View>
-        <TouchableOpacity
-          onPress={(event) => handleUpdate(event)}
-          disabled={
-            typeof enableUpdateButton === "boolean" && enableUpdateButton
-          }
-        >
-          <Text
-            className={
-              enableUpdateButton
-                ? "bg-gray-600 p-5 rounded-xl w-[140] m-8 text-white text-center"
-                : "bg-blue-600 p-5 rounded-xl w-[140] m-8 text-white text-center"
+        {isUpdate ? (
+          <LottiesLoading />
+        ) : (
+          <TouchableOpacity
+            onPress={(event) => handleUpdate(event)}
+            disabled={
+              typeof enableUpdateButton === "boolean" && enableUpdateButton
             }
+            className="mb-4"
           >
-            UPDATE
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setToken(null, null)}>
+            <Text
+              className={
+                enableUpdateButton
+                  ? "bg-gray-600 p-5 rounded-xl w-[140] m-4 text-white text-center"
+                  : "bg-blue-600 p-5 rounded-xl w-[140] m-4 text-white text-center"
+              }
+            >
+              UPDATE
+            </Text>
+          </TouchableOpacity>
+        )}
+        {error && (
+          <Text className="text-red-500 text-center mb-4">{error}</Text>
+        )}
+        <TouchableOpacity
+          onPress={() => {
+            setToken(null, null);
+            alert("You have been disconnected");
+          }}
+          className="mt-4"
+        >
           <Text className="bg-purple-700 p-5 rounded-xl w-[140] text-white text-center">
             DECONNEXION
           </Text>
         </TouchableOpacity>
-        <View className="flex-row justify-around w-full mt-10">
-          <TouchableOpacity
-            onPress={(event) => handleDeletePicture(event)}
-            disabled={typeof picturePresent === "boolean" && !picturePresent}
-          >
-            <Text
-              className={
-                !picturePresent
-                  ? "bg-gray-600 p-5 rounded-xl w-[120]  text-white text-center"
-                  : "bg-red-600 p-5 rounded-xl w-[120]  text-white text-center"
-              }
+        <View className="flex-row justify-around w-full mt-20">
+          {isUploadDeletePicture ? (
+            <LottiesLoading />
+          ) : (
+            <TouchableOpacity
+              onPress={(event) => handleDeletePicture(event)}
+              disabled={typeof picturePresent === "boolean" && !picturePresent}
             >
-              DELETE PICTURE
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={(event) => handleDeleteUser(event)}>
-            <Text className="bg-red-600 p-5 rounded-xl w-[120]  text-white text-center">
-              DELETE ACCOUNT
-            </Text>
-          </TouchableOpacity>
+              <Text
+                className={
+                  !picturePresent
+                    ? "bg-gray-600 p-3 rounded-xl w-[120]  text-white text-center"
+                    : "bg-red-600 p-3 rounded-xl w-[120]  text-white text-center"
+                }
+              >
+                DELETE PICTURE
+              </Text>
+            </TouchableOpacity>
+          )}
+          {isUploadDeleteUser ? (
+            <LottiesLoading />
+          ) : (
+            <TouchableOpacity onPress={(event) => alertButtonDeleteUser(event)}>
+              <Text className="bg-red-600 p-3 rounded-xl w-[120]  text-white text-center">
+                DELETE ACCOUNT
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </KeyboardAwareScrollView>

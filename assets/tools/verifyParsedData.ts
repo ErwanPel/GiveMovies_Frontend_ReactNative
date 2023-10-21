@@ -1,13 +1,14 @@
-// const verifyParsedData<T> = (data: T, ZodSchema: T) => {
-//   const dataToVerify:  = data;
+import { ZodError, z } from "zod";
 
-//   const parsedData = ZodSchema.parse(dataToVerify);
-// };
-
-export function verifyParsedData<T>(data: T, ZodSchema: any) {
+export function verifyParsedData<T>(
+  data: T,
+  ZodSchema: any,
+  zodError: z.ZodError<any> | null,
+  setZodError: React.Dispatch<React.SetStateAction<z.ZodError<any> | null>>
+) {
   try {
     return ZodSchema.parse(data);
   } catch (error: any) {
-    console.log(error);
+    setZodError && setZodError(error);
   }
 }

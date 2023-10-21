@@ -22,6 +22,7 @@ export default function MoviesScreen({ navigation }: Props) {
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<TMovies | null>(null);
   const [selectedPage, setSelectedPage] = useState<number>(1);
+  const [zodError, setZodError] = useState<ZodError | null>(null);
 
   let numberPage = Array.from(Array(473).keys());
 
@@ -42,7 +43,9 @@ export default function MoviesScreen({ navigation }: Props) {
 
         const parsedData: TMovies | null = verifyParsedData<TMovie | null>(
           data,
-          MoviesSchema
+          MoviesSchema,
+          zodError,
+          setZodError
         );
         setData(parsedData);
 
@@ -54,7 +57,8 @@ export default function MoviesScreen({ navigation }: Props) {
     fetchData();
   }, [selectedPage]);
 
-  if (error) return <Text>Error: {error.message}</Text>;
+  if (error)
+    return <Text className="text-red-700 mt-4">Error: {error.message}</Text>;
 
   return isLoading ? (
     <LottiesView />

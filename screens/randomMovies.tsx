@@ -1,6 +1,7 @@
 import {
   Text,
   View,
+  Image,
   TouchableOpacity,
   GestureResponderEvent,
 } from "react-native";
@@ -16,6 +17,7 @@ import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
 import Card from "../components/Card";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
 import { useAuthContext } from "../assets/context/AuthContext";
+import LottiesPopCorn from "../components/LottiesPopCorn";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -23,6 +25,7 @@ export default function RandomMoviesScreen(props: Props) {
   const [movie, setMovie] = useState<TMovie | null>(null);
   const [error, setError] = useState<ZodError | null>(null);
   const [isLoading, setIsLoading] = useState<Boolean>(true);
+  const [zodError, setZodError] = useState<ZodError | null>(null);
 
   const { userToken } = useAuthContext();
 
@@ -30,6 +33,7 @@ export default function RandomMoviesScreen(props: Props) {
     event.preventDefault();
     try {
       const number = Math.ceil(Math.random() * 472);
+      setIsLoading(true);
       const { data } = await axios.get(
         `https://site--givemovies-backend--fwddjdqr85yq.code.run/movies?page=${number}`,
         {
@@ -42,7 +46,9 @@ export default function RandomMoviesScreen(props: Props) {
 
       const parsedData: TMovies | null = verifyParsedData<TMovies | null>(
         data,
-        MoviesSchema
+        MoviesSchema,
+        zodError,
+        setZodError
       );
 
       if (parsedData) {
@@ -51,23 +57,29 @@ export default function RandomMoviesScreen(props: Props) {
         );
 
         setMovie(parsedData.results[movieNumber]);
-      }
 
-      setIsLoading(false);
+        setIsLoading(false);
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <View className="flex items-center justify-start w-full h-screen bg-black pt-6">
+    <View className="absolute flex items-center justify-start w-full h-screen bg-black pt-6">
       <Text className="text-white text-lg">No idea for watch a movie ?</Text>
       <TouchableOpacity onPress={(event) => handleRandom(event)}>
         <View className="bg-white p-4 rounded-lg mt-10 mb-20">
           <FontAwesome5 name="dice" size={38} color="black" />
         </View>
       </TouchableOpacity>
-      {!isLoading && <Card movie={movie} />}
+      {isLoading ? (
+        <View>
+          <LottiesPopCorn />
+        </View>
+      ) : (
+        <Card movie={movie} />
+      )}
     </View>
   );
 }
