@@ -17,13 +17,15 @@ import { z, ZodError } from "zod";
 import { useAuthContext } from "../assets/context/AuthContext";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
 import LottiesLoading from "./LottiesLoading";
+import { warnDelete } from "../assets/tools/warnDelete";
 
 type ReviewFormProps = {
   reviewRef: React.LegacyRef<TextInput> | null;
   id: number | null;
   title: string | null;
   reload: Boolean;
-  setReload: React.Dispatch<React.SetStateAction<Boolean>>;
+  setReload: React.Dispatch<React.SetStateAction<boolean>>;
+  poster: string | null;
 };
 
 type postData = z.infer<typeof postReviewSchema>;
@@ -36,6 +38,7 @@ export default function ReviewForm({
   reviewRef,
   id,
   title,
+  poster,
   reload,
   setReload,
 }: ReviewFormProps) {
@@ -100,7 +103,7 @@ export default function ReviewForm({
 
   const handlePostReview = async (event: GestureResponderEvent) => {
     event.preventDefault();
-    if (emoji && text && title && id) {
+    if (emoji && text && title && poster && id) {
       try {
         setIsUploadedPost(true);
         const parsedData = verifyParsedData<postData | null>(
@@ -109,6 +112,7 @@ export default function ReviewForm({
             movieID: id,
             feeling: emoji,
             opinion: text,
+            poster,
           },
           postReviewSchema,
           zodError,
@@ -125,6 +129,7 @@ export default function ReviewForm({
             },
           }
         );
+
         setError("");
         setIsUploadedPost(false);
         setReload(true);
@@ -305,7 +310,17 @@ export default function ReviewForm({
           {isUploadedDelete ? (
             <LottiesLoading />
           ) : (
-            <TouchableOpacity onPress={(event) => handleDeleteReview(event)}>
+            <TouchableOpacity
+              onPress={(event) =>
+                warnDelete(
+                  event,
+                  "Delete review",
+                  "Do you want delete your review ?",
+                  setIsUploadedDelete,
+                  handleDeleteReview
+                )
+              }
+            >
               <Text className="text-white w-[130] text-center bg-red-600 p-4 rounded-xl">
                 DELETE YOUR REVIEW
               </Text>

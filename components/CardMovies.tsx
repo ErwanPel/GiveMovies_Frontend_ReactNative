@@ -1,11 +1,12 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import {
-  NativeStackNavigationProp,
-  NativeStackScreenProps,
-} from "@react-navigation/native-stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./Nav";
 import { useNavigation } from "@react-navigation/native";
 import { TMovie } from "../screens/Movie";
+import { getReviewObject } from "../assets/zodSchema/reviewSchemaFile";
+import { z } from "zod";
+
+type TReviewObject = z.infer<typeof getReviewObject>;
 
 type cardProps = {
   movie: TMovie | null;
@@ -28,6 +29,7 @@ export default function Card({ movie }: cardProps) {
             source={{ uri: movie.poster_path.w154 }}
             className="w-[154] h-[220]"
           />
+
           <Text className="   text-white text-center h-[40] mt-2">
             {movie.title.toUpperCase()}
           </Text>

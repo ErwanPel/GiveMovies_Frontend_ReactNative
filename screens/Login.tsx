@@ -61,8 +61,9 @@ export default function Login({ navigation }: Props) {
           },
         }
       );
+
       setIsLoading(false);
-      setToken(response.data.token, response.data._id);
+      setToken(response.data.token, response.data.id);
     } catch (error: any) {
       if (zodError) {
         zodError.issues.map((error) => {

@@ -31,6 +31,7 @@ export default function AuthProvider({ children }: AuthContextProps) {
       AsyncStorage.removeItem("userID");
     }
     setUserToken(token);
+    setUserID(id);
   };
 
   const valueAuth = {

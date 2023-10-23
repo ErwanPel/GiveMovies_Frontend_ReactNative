@@ -18,6 +18,9 @@ export const getReviewObject = z.object({
   }),
   movieID: z.number(),
   title: z.string(),
+  poster: z.string().url(),
+  like: z.array(z.string()),
+  dislike: z.array(z.string()),
 });
 
 export const getReviewSchema = z.array(getReviewObject);
@@ -30,6 +33,7 @@ export const getReviewForm = z.object({
   user: z.string(),
   movieID: z.number(),
   title: z.string(),
+  poster: z.string().url(),
 });
 
 export const postReviewSchema = z.object({
@@ -37,6 +41,7 @@ export const postReviewSchema = z.object({
   title: z.string(),
   feeling: z.union([z.literal("Good"), z.literal("Neutral"), z.literal("Bad")]),
   opinion: z.string(),
+  poster: z.string().url(),
 });
 
 export const putReviewSchema = z.object({
@@ -47,4 +52,9 @@ export const putReviewSchema = z.object({
     z.null(),
   ]),
   opinion: z.string(),
+});
+
+export const postPreferenceReview = z.object({
+  preference: z.union([z.literal("like"), z.literal("dislike")]),
+  userID: z.string(),
 });

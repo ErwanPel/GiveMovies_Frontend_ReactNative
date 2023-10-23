@@ -13,7 +13,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ZodError, z } from "zod";
 import LottiesView from "../components/LottiesView";
 import { SoloMovieSchema } from "../assets/zodSchema/moviesSchema";
-import Review from "../components/Review";
+import Reviews from "../components/Reviews";
 import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
@@ -61,6 +61,8 @@ export default function MovieScreen(props: Props) {
     };
     fetchData();
   }, []);
+
+  console.log(JSON.stringify(data, null, 2));
 
   return isLoading ? (
     <LottiesView />
@@ -124,10 +126,11 @@ export default function MovieScreen(props: Props) {
           </>
         )}
       </View>
-      <Review
+      <Reviews
         reviewRef={reviewRef}
         id={data && data.id}
         title={data && data.title}
+        poster={data && data.poster_path.w154}
       />
     </ScrollView>
   );

@@ -22,6 +22,8 @@ import {
 import { z, ZodError } from "zod";
 import { setPictureToUpload } from "../assets/tools/setPictureToUpload";
 import LottiesLoading from "../components/LottiesLoading";
+import { warnDelete } from "../assets/tools/warnDelete";
+import LottiesView from "../components/LottiesView";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 
@@ -50,7 +52,7 @@ export default function ProfileScreen(props: Props) {
   const [emailError, setEmailError] = useState<string>("");
   const [error, setError] = useState<string>("");
 
-  const { userToken, setToken } = useAuthContext();
+  const { userToken, setToken, userID } = useAuthContext();
 
   const reloadProfileScreen = () => {
     setEnableUpdateButton(true);
@@ -63,26 +65,6 @@ export default function ProfileScreen(props: Props) {
     setZodError(null);
     setEmailError("");
     setError("");
-  };
-
-  const alertButtonDeleteUser = (event: GestureResponderEvent) => {
-    event.persist();
-    setIsUploadDeleteUser(true);
-    Alert.alert(
-      "Delete User",
-      "Do you want delete your account ?",
-      [
-        { text: "Yes", onPress: () => handleDeleteUser(event) },
-        {
-          text: "No",
-          onPress: () => setIsUploadDeleteUser(false),
-          style: "cancel",
-        },
-      ],
-      {
-        cancelable: true,
-      }
-    );
   };
 
   const handleUpdate = async (event: GestureResponderEvent) => {
@@ -260,109 +242,148 @@ export default function ProfileScreen(props: Props) {
     enableUpdateButton
   );
 
-  return isLoading ? (
-    <Text>Loading</Text>
-  ) : (
-    <KeyboardAwareScrollView>
-      <View className="flex items-center  justify-start w-full h-screen bg-black pt-6">
-        <ImageAndSelectPicture
-          picture={picture}
-          setPicture={setPicture}
-          sizeBorder="w-[80] h-[80]"
-          sizeImage={40}
-          setChangePicture={setChangePicture}
-          changePicture={changePicture}
-          enableUpdateButton={enableUpdateButton}
-          setEnableUpdateButton={setEnableUpdateButton}
-        />
+  const goToReviewUser = () => {
+    if (userID) {
+      props.navigation.navigate("ReviewUser", { id: userID });
+    }
+  };
 
-        <View className=" w-[80%] mb-8">
-          <Text className="text-slate-100 ml-3 text-base p-2">Email</Text>
-          <TextInput
-            className={
-              emailError
-                ? "bg-red-200 px-6 py-1 rounded-3xl"
-                : "bg-slate-100 px-6 py-1 rounded-3xl"
-            }
-            onChangeText={(text) => {
-              setChangeText(true);
-              setEnableUpdateButton(false);
-              setEmail((prev) => text);
-            }}
-            placeholder="doe@gmail.com"
-            placeholderTextColor={"grey"}
-            inputMode="email"
-            value={email}
-          />
-          {emailError && (
-            <Text className="text-red-500 text-center mt-2">{emailError}</Text>
-          )}
-        </View>
-        {isUpdate ? (
-          <LottiesLoading />
-        ) : (
-          <TouchableOpacity
-            onPress={(event) => handleUpdate(event)}
-            disabled={
-              typeof enableUpdateButton === "boolean" && enableUpdateButton
-            }
-            className="mb-4"
-          >
-            <Text
-              className={
-                enableUpdateButton
-                  ? "bg-gray-600 p-5 rounded-xl w-[140] m-4 text-white text-center"
-                  : "bg-blue-600 p-5 rounded-xl w-[140] m-4 text-white text-center"
-              }
-            >
-              UPDATE
+  return isLoading ? (
+    <LottiesView />
+  ) : (
+    <>
+      <View className="justify-around items-center flex-row bg-black border-b-2 border-zinc-100">
+        <TouchableOpacity onPress={() => goToReviewUser()}>
+          <View className=" p-5 ">
+            <Text className="bg-purple-700 text-white p-3 rounded-3xl">
+              MY REVIEWS
             </Text>
-          </TouchableOpacity>
-        )}
-        {error && (
-          <Text className="text-red-500 text-center mb-4">{error}</Text>
-        )}
+          </View>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
             setToken(null, null);
             alert("You have been disconnected");
           }}
-          className="mt-4"
         >
-          <Text className="bg-purple-700 p-5 rounded-xl w-[140] text-white text-center">
-            DECONNEXION
+          <Text className="bg-purple-700 p-3 rounded-3xl  text-white text-center">
+            DISCONNECTION
           </Text>
         </TouchableOpacity>
-        <View className="flex-row justify-around w-full mt-20">
-          {isUploadDeletePicture ? (
+      </View>
+      <KeyboardAwareScrollView>
+        <View className="flex items-center  justify-start w-full h-screen bg-black pt-6">
+          <ImageAndSelectPicture
+            picture={picture}
+            setPicture={setPicture}
+            sizeBorder="w-[80] h-[80]"
+            sizeImage={40}
+            setChangePicture={setChangePicture}
+            changePicture={changePicture}
+            enableUpdateButton={enableUpdateButton}
+            setEnableUpdateButton={setEnableUpdateButton}
+          />
+
+          <View className=" w-[80%] mb-8">
+            <Text className="text-slate-100 ml-3 text-base p-2">Email</Text>
+            <TextInput
+              className={
+                emailError
+                  ? "bg-red-200 px-6 py-1 rounded-3xl"
+                  : "bg-slate-100 px-6 py-1 rounded-3xl"
+              }
+              onChangeText={(text) => {
+                setChangeText(true);
+                setEnableUpdateButton(false);
+                setEmail((prev) => text);
+              }}
+              placeholder="doe@gmail.com"
+              placeholderTextColor={"grey"}
+              inputMode="email"
+              value={email}
+            />
+            {emailError && (
+              <Text className="text-red-500 text-center mt-2">
+                {emailError}
+              </Text>
+            )}
+          </View>
+          {isUpdate ? (
             <LottiesLoading />
           ) : (
             <TouchableOpacity
-              onPress={(event) => handleDeletePicture(event)}
-              disabled={typeof picturePresent === "boolean" && !picturePresent}
+              onPress={(event) => handleUpdate(event)}
+              disabled={
+                typeof enableUpdateButton === "boolean" && enableUpdateButton
+              }
+              className="mb-4"
             >
               <Text
                 className={
-                  !picturePresent
-                    ? "bg-gray-600 p-3 rounded-xl w-[120]  text-white text-center"
-                    : "bg-red-600 p-3 rounded-xl w-[120]  text-white text-center"
+                  enableUpdateButton
+                    ? "bg-gray-600 p-5 rounded-xl w-[140] m-4 text-white text-center"
+                    : "bg-blue-600 p-5 rounded-xl w-[140] m-4 text-white text-center"
                 }
               >
-                DELETE PICTURE
+                UPDATE
               </Text>
             </TouchableOpacity>
           )}
-          {isUploadDeleteUser ? (
-            <LottiesLoading />
-          ) : (
-            <TouchableOpacity onPress={(event) => alertButtonDeleteUser(event)}>
-              <Text className="bg-red-600 p-3 rounded-xl w-[120]  text-white text-center">
-                DELETE ACCOUNT
-              </Text>
-            </TouchableOpacity>
+          {error && (
+            <Text className="text-red-500 text-center mb-4">{error}</Text>
           )}
+
+          <View className="flex-row justify-around w-full mt-20">
+            {isUploadDeletePicture ? (
+              <LottiesLoading />
+            ) : (
+              <TouchableOpacity
+                onPress={(event) =>
+                  warnDelete(
+                    event,
+                    "delete picture",
+                    "Do you want delete your profil's picture ?",
+                    setIsUploadDeletePicture,
+                    handleDeletePicture
+                  )
+                }
+                disabled={
+                  typeof picturePresent === "boolean" && !picturePresent
+                }
+              >
+                <Text
+                  className={
+                    !picturePresent
+                      ? "bg-gray-600 p-3 rounded-xl w-[120]  text-white text-center"
+                      : "bg-red-600 p-3 rounded-xl w-[120]  text-white text-center"
+                  }
+                >
+                  DELETE PICTURE
+                </Text>
+              </TouchableOpacity>
+            )}
+            {isUploadDeleteUser ? (
+              <LottiesLoading />
+            ) : (
+              <TouchableOpacity
+                onPress={(event) =>
+                  warnDelete(
+                    event,
+                    "Delete User",
+                    "Do you want delete your user account ?",
+                    setIsUploadDeleteUser,
+                    handleDeleteUser
+                  )
+                }
+              >
+                <Text className="bg-red-600 p-3 rounded-xl w-[120]  text-white text-center">
+                  DELETE ACCOUNT
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      </View>
-    </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView>
+    </>
   );
 }

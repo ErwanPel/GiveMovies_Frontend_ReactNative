@@ -14,7 +14,7 @@ import { TMovies } from "./Movies";
 import { ZodError } from "zod";
 import axios from "axios";
 import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
-import Card from "../components/Card";
+import CardMovies from "../components/CardMovies";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
 import { useAuthContext } from "../assets/context/AuthContext";
 import LottiesPopCorn from "../components/LottiesPopCorn";
@@ -78,7 +78,7 @@ export default function RandomMoviesScreen(props: Props) {
           <LottiesPopCorn />
         </View>
       ) : (
-        <Card movie={movie} />
+        <CardMovies movie={movie} />
       )}
     </View>
   );

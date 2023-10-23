@@ -8,7 +8,7 @@ import LottiesView from "../components/LottiesView";
 import { MoviesSchema } from "../assets/zodSchema/moviesSchema";
 import { TMovie } from "./Movie";
 import { Picker } from "@react-native-picker/picker";
-import Card from "../components/Card";
+import CardMovies from "../components/CardMovies";
 import { FontAwesome } from "@expo/vector-icons";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
 import { useAuthContext } from "../assets/context/AuthContext";
@@ -50,7 +50,7 @@ export default function MoviesScreen({ navigation }: Props) {
         setData(parsedData);
 
         setIsLoading(false);
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
       }
     };
@@ -125,14 +125,8 @@ export default function MoviesScreen({ navigation }: Props) {
         className="bg-black pt-3"
         data={data && data.results}
         keyExtractor={(item: TMovie) => String(item.id)}
-        renderItem={({ item }) => <Card movie={item} />}
+        renderItem={({ item }) => <CardMovies movie={item} />}
       />
     </>
   );
-}
-{
-  /* {data !== null &&
-          data.results.map((movie) => {
-            return <Card movie={movie} />;
-          })} */
 }

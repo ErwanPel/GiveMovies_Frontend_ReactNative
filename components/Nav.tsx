@@ -13,6 +13,8 @@ import Signin from "../screens/Signin";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
+import ReviewsWall from "../screens/ReviewsWall";
+import ReviewsUser from "../screens/ReviewsUser";
 
 export type RootStackParamList = {
   Signin: undefined;
@@ -22,10 +24,12 @@ export type RootStackParamList = {
   Tab: undefined;
   Profile: undefined;
   RandomMovies: undefined;
+  ReviewsWall: undefined;
+  ReviewUser: { id: string };
 };
 
 export type RootTabParamList = {
-  TabMovies: undefined;
+  TabCinematec: undefined;
   TabProfile: undefined;
   TabRandomMovies: undefined;
 };
@@ -41,9 +45,10 @@ export default function Nav() {
   useEffect(() => {
     const bootstrapAsync = async () => {
       const userToken = await AsyncStorage.getItem("userToken");
-      const userId = await AsyncStorage.getItem("userID");
+      const userID = await AsyncStorage.getItem("userID");
+      console.log("userID", userID);
       setUserToken(userToken);
-      setUserID(userId);
+      setUserID(userID);
       setIsLoading(false);
     };
     bootstrapAsync();
@@ -80,9 +85,9 @@ export default function Nav() {
                 }}
               >
                 <Tab.Screen
-                  name="TabMovies"
+                  name="TabCinematec"
                   options={{
-                    tabBarLabel: "Movies",
+                    tabBarLabel: "Cinematec",
                     tabBarIcon: ({ color, size }) => (
                       <MaterialIcons
                         name="local-movies"
@@ -102,6 +107,20 @@ export default function Nav() {
                         headerTitleAlign: "center",
                       }}
                     >
+                      <Stack.Screen
+                        name="ReviewsWall"
+                        component={ReviewsWall}
+                        options={{
+                          title: "Review's Wall",
+                        }}
+                      />
+                      <Stack.Screen
+                        name="ReviewUser"
+                        component={ReviewsUser}
+                        options={{
+                          title: "Review's User",
+                        }}
+                      />
                       <Stack.Screen name="Movies" component={Movies} />
                       <Stack.Screen name="Movie" component={Movie} />
                     </Stack.Navigator>
@@ -131,6 +150,13 @@ export default function Nav() {
                         component={RandomMovies}
                       />
                       <Stack.Screen name="Movie" component={Movie} />
+                      <Stack.Screen
+                        name="ReviewUser"
+                        component={ReviewsUser}
+                        options={{
+                          title: "Review's User",
+                        }}
+                      />
                     </Stack.Navigator>
                   )}
                 </Tab.Screen>
@@ -154,6 +180,13 @@ export default function Nav() {
                       }}
                     >
                       <Stack.Screen name="Profile" component={Profile} />
+                      <Stack.Screen
+                        name="ReviewUser"
+                        component={ReviewsUser}
+                        options={{
+                          title: "Review's User",
+                        }}
+                      />
                     </Stack.Navigator>
                   )}
                 </Tab.Screen>
