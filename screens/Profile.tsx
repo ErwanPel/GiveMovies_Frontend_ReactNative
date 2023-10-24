@@ -232,34 +232,11 @@ export default function ProfileScreen(props: Props) {
     getData();
   }, [reload]);
 
-  console.log(
-    "CP",
-    changePicture,
-    "CT",
-    changeText,
-    email,
-    "eB",
-    enableUpdateButton
-  );
-
-  const goToReviewUser = () => {
-    if (userID) {
-      props.navigation.navigate("ReviewUser", { id: userID });
-    }
-  };
-
   return isLoading ? (
     <LottiesView />
   ) : (
     <>
-      <View className="justify-around items-center flex-row bg-black border-b-2 border-zinc-100">
-        <TouchableOpacity onPress={() => goToReviewUser()}>
-          <View className=" p-5 ">
-            <Text className="bg-purple-700 text-white p-3 rounded-3xl">
-              MY REVIEWS
-            </Text>
-          </View>
-        </TouchableOpacity>
+      <View className="justify-around items-center p-6 bg-black border-b-2 border-zinc-100">
         <TouchableOpacity
           onPress={() => {
             setToken(null, null);

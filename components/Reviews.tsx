@@ -1,7 +1,7 @@
 import ReviewForm from "./ReviewForm";
-import { TextInput, View, ScrollView, Text } from "react-native";
+import { TextInput, View, ScrollView, FlatList, Text } from "react-native";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { z, ZodError } from "zod";
 import { getReviewSchema } from "../assets/zodSchema/reviewSchemaFile";
 import { useAuthContext } from "../assets/context/AuthContext";
@@ -9,6 +9,7 @@ import ImageProfile from "./ImageProfile";
 import { Entypo } from "@expo/vector-icons";
 import CardReview from "./CardReview";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
+import { TReviewObject } from "../screens/ReviewsWall";
 
 type ReviewProps = {
   reviewRef: React.LegacyRef<TextInput> | null;
@@ -27,8 +28,6 @@ export default function Review({ reviewRef, id, title, poster }: ReviewProps) {
   const [reload, setReload] = useState<boolean>(false);
 
   const { userToken, userID } = useAuthContext();
-
-  console.log("token, id", userToken, userID);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,11 +63,29 @@ export default function Review({ reviewRef, id, title, poster }: ReviewProps) {
         }
       }
     };
+
     setReload(false);
     fetchData();
   }, [reload]);
 
-  console.log("reload", reload);
+  const renderItem = useCallback(
+    ({ item }: any) => <CardReview reviewItem={item} setReload={setReload} />,
+    []
+  );
+
+  const keyExtractor = useCallback(
+    (item: TReviewObject) => String(item._id),
+    []
+  );
+
+  const emptyList = useCallback(
+    () => (
+      <View>
+        <Text className="text-white">You have no review</Text>
+      </View>
+    ),
+    []
+  );
 
   return isLoading ? (
     <Text>Loading</Text>
@@ -82,11 +99,21 @@ export default function Review({ reviewRef, id, title, poster }: ReviewProps) {
         setReload={setReload}
         reload={reload}
       />
-      <ScrollView horizontal className="border-zinc-400 border-t-2 ">
-        {data?.map((rev) => {
-          return <CardReview reviewItem={rev} setReload={setReload} />;
-        })}
-      </ScrollView>
+
+      <FlatList
+        contentContainerStyle={{
+          alignItems: "center",
+        }}
+        horizontal
+        className="bg-black pt-3"
+        data={data && data}
+        initialNumToRender={4}
+        windowSize={4}
+        maxToRenderPerBatch={4}
+        ListEmptyComponent={emptyList}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+      />
     </View>
   );
 }

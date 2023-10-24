@@ -34,7 +34,7 @@ export default function CardReview({ reviewItem, setReload }: cardReviewProps) {
     preference: "like" | "dislike"
   ) => {
     event.preventDefault();
-    console.log(preference);
+
     if (preference && userID) {
       try {
         const parsedData = verifyParsedData<TpostPreference>(
@@ -54,16 +54,13 @@ export default function CardReview({ reviewItem, setReload }: cardReviewProps) {
             },
           }
         );
-        console.log(JSON.stringify(data, null, 2));
 
         setReload(true);
       } catch (error: any) {
-        console.log(error.response.data);
+        console.log(error);
       }
     }
   };
-
-  console.log(JSON.stringify(reviewItem, null, 2));
 
   return (
     reviewItem && (
@@ -71,8 +68,8 @@ export default function CardReview({ reviewItem, setReload }: cardReviewProps) {
         <View
           className={
             reviewItem.user._id === userID
-              ? "border-purple-500  border-2 w-[290] p-3 rounded-3xl mx-4 my-8 relative"
-              : "border-zinc-300  border-2 w-[290] p-3 rounded-3xl mx-4 my-8 relative"
+              ? "border-purple-500 mb-[50] border-2 w-[290] p-3 rounded-3xl mx-4  relative h-[220]"
+              : "border-zinc-300 mb-[50] border-2 w-[290] p-3 rounded-3xl mx-4  relative h-[220]"
           }
           key={reviewItem._id}
         >

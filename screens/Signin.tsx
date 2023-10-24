@@ -105,8 +105,6 @@ export default function Signin({ navigation }: Props) {
     }
   };
 
-  console.log("PE", passwordError);
-
   return (
     <KeyboardAwareScrollView>
       <View className="flex items-center w-full h-screen bg-black pt-6">

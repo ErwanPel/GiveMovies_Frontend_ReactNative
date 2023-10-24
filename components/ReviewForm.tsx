@@ -18,6 +18,7 @@ import { useAuthContext } from "../assets/context/AuthContext";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
 import LottiesLoading from "./LottiesLoading";
 import { warnDelete } from "../assets/tools/warnDelete";
+import EmojiChoice from "./EmojiChoice";
 
 type ReviewFormProps = {
   reviewRef: React.LegacyRef<TextInput> | null;
@@ -204,62 +205,15 @@ export default function ReviewForm({
   };
 
   return isLoading ? (
-    <Text className="text-white">Loading</Text>
+    <LottiesLoading />
   ) : (
-    <View className="bg-black px-4 pt-4 flex gap-4">
-      <View className="flex flex-row justify-around">
-        <TouchableOpacity
-          onPress={() => {
-            disablePost && execActivateUpdate();
-            setEmoji("Good");
-          }}
-        >
-          <View
-            className={
-              emoji === "Good"
-                ? "items-center p-1.5 rounded-lg bg-slate-700 w-[80]"
-                : "items-center p-1.5 w-[80]"
-            }
-          >
-            <Entypo name="emoji-happy" size={24} color="green" />
-            <Text className="text-green-500 font-bold mt-2">GOOD</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            disablePost && execActivateUpdate();
-            setEmoji("Neutral");
-          }}
-        >
-          <View
-            className={
-              emoji === "Neutral"
-                ? "items-center p-1.5 rounded-lg bg-slate-700 w-[80]"
-                : "items-center p-1.5 w-[80]"
-            }
-          >
-            <Entypo name="emoji-neutral" size={24} color="orange" />
-            <Text className="text-yellow-500 font-bold mt-2">NEUTRAL</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            disablePost && execActivateUpdate();
-            setEmoji("Bad");
-          }}
-        >
-          <View
-            className={
-              emoji === "Bad"
-                ? "items-center p-1.5 rounded-lg bg-slate-700 w-[80]"
-                : "items-center p-1.5 w-[80]"
-            }
-          >
-            <Entypo name="emoji-sad" size={24} color="red" />
-            <Text className="text-red-500 font-bold mt-2">BAD</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+    <View className="bg-black px-4 pt-4 flex gap-4 border-b-2 pb-[50] border-white">
+      <EmojiChoice
+        emoji={emoji}
+        setEmoji={setEmoji}
+        setActivateUpdate={setActivateUpdate}
+        activateUpdate={activateUpdate}
+      />
       <TextInput
         ref={reviewRef}
         value={text}

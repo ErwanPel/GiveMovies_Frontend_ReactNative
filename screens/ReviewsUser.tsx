@@ -1,6 +1,6 @@
 import { Text, FlatList, View, TouchableOpacity, Image } from "react-native";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../components/Nav";
 import { useAuthContext } from "../assets/context/AuthContext";
@@ -8,7 +8,7 @@ import { ZodError, z } from "zod";
 import { getReviewSchema } from "../assets/zodSchema/reviewSchemaFile";
 import { getReviewObject } from "../assets/zodSchema/reviewSchemaFile";
 import { verifyParsedData } from "../assets/tools/verifyParsedData";
-import CardReview from "../components/CardReview";
+import ListForReviews from "../components/ListForReviews";
 import LottiesView from "../components/LottiesView";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ReviewUser">;
@@ -51,48 +51,44 @@ export default function ReviewsUser(props: Props) {
         console.log(error);
       }
     };
+    setReload(false);
     getData();
-  }, []);
+  }, [reload]);
+
+  const renderItem = useCallback(
+    ({ item }: any) => <ListForReviews item={item} setReload={setReload} />,
+    []
+  );
+
+  const keyExtractor = useCallback(
+    (item: TReviewObject) => String(item._id),
+    []
+  );
+
+  const emptyList = useCallback(
+    () => (
+      <View>
+        <Text className="text-white">You have no review</Text>
+      </View>
+    ),
+    []
+  );
 
   return isLoading ? (
     <LottiesView />
   ) : (
-    <>
-      <FlatList
-        contentContainerStyle={{
-          alignItems: "center",
-        }}
-        className="bg-black pt-3"
-        data={data && data}
-        keyExtractor={(item: TReviewObject) => String(item._id)}
-        renderItem={({ item }) => (
-          <View
-            className=" mb-[50]
-           border-b-2 border-zinc-100 items-center "
-          >
-            <CardReview reviewItem={item} setReload={setReload} />
-            <View
-              className=" h-[210] w-[154] flex items-center justify-center "
-              key={item._id}
-            >
-              <TouchableOpacity
-                onPress={() =>
-                  props.navigation.navigate("Movie", { id: item.movieID })
-                }
-              >
-                <Image
-                  source={{ uri: item.poster }}
-                  className="w-[100] h-[140]"
-                />
-
-                <Text className="text-white text-center h-[40] mt-2">
-                  {item.title.toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
-    </>
+    <FlatList
+      contentContainerStyle={{
+        alignItems: "center",
+      }}
+      className="bg-black pt-3"
+      data={data && data}
+      initialNumToRender={3}
+      windowSize={3}
+      maxToRenderPerBatch={3}
+      ListEmptyComponent={emptyList}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+    />
   );
 }

@@ -46,7 +46,6 @@ export default function Nav() {
     const bootstrapAsync = async () => {
       const userToken = await AsyncStorage.getItem("userToken");
       const userID = await AsyncStorage.getItem("userID");
-      console.log("userID", userID);
       setUserToken(userToken);
       setUserID(userID);
       setIsLoading(false);
@@ -180,13 +179,6 @@ export default function Nav() {
                       }}
                     >
                       <Stack.Screen name="Profile" component={Profile} />
-                      <Stack.Screen
-                        name="ReviewUser"
-                        component={ReviewsUser}
-                        options={{
-                          title: "Review's User",
-                        }}
-                      />
                     </Stack.Navigator>
                   )}
                 </Tab.Screen>

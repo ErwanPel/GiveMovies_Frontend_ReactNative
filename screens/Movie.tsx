@@ -62,8 +62,6 @@ export default function MovieScreen(props: Props) {
     fetchData();
   }, []);
 
-  console.log(JSON.stringify(data, null, 2));
-
   return isLoading ? (
     <LottiesView />
   ) : (
