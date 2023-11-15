@@ -86,7 +86,7 @@ export default function CardReview({ reviewItem, setReload }: cardReviewProps) {
                   sizeImage={20}
                   id={reviewItem.user?._id}
                 />
-                <Text className="text-white text-base ml-4  w-[130]">
+                <Text className="text-white text-base ml-4 w-[130]">
                   {reviewItem.user.username}
                 </Text>
               </View>
