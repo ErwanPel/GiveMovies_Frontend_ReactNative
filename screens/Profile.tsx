@@ -244,7 +244,7 @@ export default function ProfileScreen(props: Props) {
           }}
         >
           <Text className="bg-purple-700 p-3 rounded-3xl  text-white text-center">
-            DISCONNECTION
+            LOG OUT
           </Text>
         </TouchableOpacity>
       </View>

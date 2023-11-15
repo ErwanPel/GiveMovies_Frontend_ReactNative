@@ -30,7 +30,7 @@ export default function Card({ movie }: cardProps) {
             className="w-[154] h-[220]"
           />
 
-          <Text className="   text-white text-center h-[40] mt-2">
+          <Text className="text-white text-center h-[60] mt-2">
             {movie.title.toUpperCase()}
           </Text>
         </TouchableOpacity>

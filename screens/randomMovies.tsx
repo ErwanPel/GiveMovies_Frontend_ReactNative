@@ -67,7 +67,7 @@ export default function RandomMoviesScreen(props: Props) {
 
   return (
     <View className="absolute flex items-center justify-start w-full h-screen bg-black pt-6">
-      <Text className="text-white text-lg">No idea for watch a movie ?</Text>
+      <Text className="text-white text-lg">Need help to choose a movie ? </Text>
       <TouchableOpacity onPress={(event) => handleRandom(event)}>
         <View className="bg-white p-4 rounded-lg mt-10 mb-20">
           <FontAwesome5 name="dice" size={38} color="black" />

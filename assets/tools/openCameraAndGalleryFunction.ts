@@ -29,11 +29,11 @@ export const getPermissionAndGetPicture = async (
     }
     if (Platform.OS === "android") {
       alert(
-        "acces to librairy denied. If you want enable the librairy's access, you have to change change permission in your phone : Setting => Applications => AirBNB app => Authorizations => Photos & videos => authorize"
+        "acces to librairy denied. If you want enable the librairy's access, you have to change change permission in your phone : Setting => Applications => giveMovies app => Authorizations => Photos & videos => authorize"
       );
     } else {
       alert(
-        "Acces to librairy denied. If you want enable the librairy's access, you have to change change permission in your phone : Setting => AirBNB app => Photos => all photos or selected photos"
+        "Acces to librairy denied. If you want enable the librairy's access, you have to change change permission in your phone : Setting => giveMovies app => Photos => all photos or selected photos"
       );
     }
   }
@@ -67,11 +67,11 @@ export const getPermissionAndCamera = async (
     }
     if (Platform.OS === "android") {
       alert(
-        "acces to camera denied. If you want enable the camera's access, you have to change change permission in your phone : Setting => Applications => AirBNB app => Authorizations => Camera => authorize"
+        "acces to camera denied. If you want enable the camera's access, you have to change change permission in your phone : Setting => Applications => giveMovies app => Authorizations => Camera => authorize"
       );
     } else {
       alert(
-        "Acces to camera denied. If you want enable the camera's access, you have to change change permission in your phone : Setting => AirBNB app => change the toggle for camera"
+        "Acces to camera denied. If you want enable the camera's access, you have to change change permission in your phone : Setting => giveMovies app => change the toggle for camera"
       );
     }
   }

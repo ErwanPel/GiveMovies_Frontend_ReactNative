@@ -110,7 +110,6 @@ export default function Review({ reviewRef, id, title, poster }: ReviewProps) {
         initialNumToRender={4}
         windowSize={4}
         maxToRenderPerBatch={4}
-        ListEmptyComponent={emptyList}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
       />

@@ -87,7 +87,7 @@ export default function ReviewsWall({ navigation }: Props) {
     <>
       <View className="items-center flex-row justify-around bg-black border-b-2 border-zinc-100">
         <TouchableOpacity onPress={() => goToReviewUser()}>
-          <View className=" p-5 ">
+          <View className=" p-5">
             <Text className="bg-purple-700 text-white p-3 rounded-3xl">
               MY REVIEWS
             </Text>

@@ -23,7 +23,6 @@ export default function AuthProvider({ children }: AuthContextProps) {
   // Create function sentToken
   const setToken = async (token: null | string, id: null | string) => {
     if (token && id) {
-      console.log(token, id);
       await AsyncStorage.setItem("userToken", token);
       await AsyncStorage.setItem("userID", id);
     } else {
