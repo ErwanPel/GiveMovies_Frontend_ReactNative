@@ -83,7 +83,7 @@ export default function MovieScreen(props: Props) {
                   <Text className="text-white bg-purple-500 w-[50] py-1 rounded-sm text-lg text-center">
                     {data.vote_average.toFixed(1)}
                   </Text>
-                  <Text className="text-white text-lg text-center ">
+                  <Text className="text-white text-lg text-center w-32">
                     {data.release_date}
                   </Text>
                 </View>
@@ -99,7 +99,7 @@ export default function MovieScreen(props: Props) {
                 onPress={() => setShowOverview(!showOverView)}
               >
                 <View className="mt-2 flex-row items-center ">
-                  <Text className="text-white underline decoration-white ">
+                  <Text className="text-white underline decoration-white w-24 text-center">
                     {showOverView ? "Show less" : "Show More"}
                   </Text>
                   <MaterialIcons
@@ -117,7 +117,9 @@ export default function MovieScreen(props: Props) {
                     size={40}
                     color="white"
                   />
-                  <Text className="text-white">See the reviews</Text>
+                  <Text className="text-white text-center w-32">
+                    See the reviews
+                  </Text>
                 </View>
               </TouchableOpacity>
             </View>

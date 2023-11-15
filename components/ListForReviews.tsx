@@ -34,7 +34,7 @@ export default function ListForReviews({
         >
           <Image source={{ uri: item.poster }} className="w-[100] h-[140]" />
 
-          <Text className="text-white text-center h-[40] mt-2">
+          <Text className="text-white text-center h-[60] mt-2">
             {item.title.toUpperCase()}
           </Text>
         </TouchableOpacity>

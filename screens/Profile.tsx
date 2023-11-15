@@ -243,7 +243,7 @@ export default function ProfileScreen(props: Props) {
             alert("You have been disconnected");
           }}
         >
-          <Text className="bg-purple-700 p-3 rounded-3xl  text-white text-center">
+          <Text className="bg-purple-700 p-3 rounded-3xl  text-white text-center  w-32">
             LOG OUT
           </Text>
         </TouchableOpacity>

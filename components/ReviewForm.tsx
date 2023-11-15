@@ -235,7 +235,7 @@ export default function ReviewForm({
             <LottiesLoading />
           ) : (
             <TouchableOpacity onPress={(event) => handlePostReview(event)}>
-              <Text className="text-white bg-purple-500 p-4 rounded-xl">
+              <Text className="text-white bg-purple-500 p-4 rounded-xl w-44 text-center">
                 SEND YOUR REVIEW
               </Text>
             </TouchableOpacity>
